@@ -1,0 +1,17 @@
+{
+  "name": "Aegis",
+  "rid": 138,
+  "score": 78,
+  "category": "Stablecoin",
+  "github_url": "https://github.com/Aegis-im/aegis-contracts/tree/master/contracts",
+  "total_audit_reports": 19,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 3,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Aegis is a crypto-native stablecoin application designed to protect savings from hyperinflation while providing users with a yield-generating mechanism. It performs funding rate arbitrage through delta-neutral trades in both spot and perpetual markets, allowing YUSD holders to earn profits from funding fees disbursed three times daily. Users can trade YUSD freely without the constraints of staking, lockups, or waiting periods, ensuring instant access to their funds. The application emphasizes user-friendliness by allowing users to earn yields simply by holding YUSD and registering their wallet, with rewards that are perpetual and can be claimed at any time. Aegis prioritizes transparency and security, partnering with top custodians and employing a security layer that ensures new YUSD is only created when collateral is deposited into its smart contract."
+}

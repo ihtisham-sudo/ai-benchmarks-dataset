@@ -1,0 +1,17 @@
+{
+  "name": "Oku Trade Orders",
+  "rid": 38,
+  "score": 66,
+  "category": "DEX",
+  "github_url": "https://github.com/gfx-labs/oku-custom-order-types",
+  "total_audit_reports": 19,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 8,
+    "medium": 11,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 37,
+  "description": "Oku is a non-custodial DeFi meta-aggregator designed to provide the best swap and bridge rates across any EVM chain. Users can create market and limit orders, manage Uniswap v3 liquidity positions, and access on/off ramp services to EU or US banks with zero fees. The platform allows for quick swaps, bridging, and ramping between over 24 chains using multiple trade routers and bridges, ensuring competitive quotes. Additionally, Oku features a comprehensive analytics dashboard for Uniswap v3, offering insights into on-chain data, whale activity, and user engagement, catering to the needs of pro traders and developers."
+}

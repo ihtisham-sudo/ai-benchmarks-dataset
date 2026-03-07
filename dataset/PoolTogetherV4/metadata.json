@@ -1,0 +1,17 @@
+{
+  "name": "PoolTogetherV4",
+  "rid": 75,
+  "score": 83,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/pooltogether/v4-core",
+  "total_audit_reports": 38,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 3,
+    "medium": 19,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 35,
+  "description": "PoolTogether is a prize savings game that allows users to pool yield from their tokens for a chance to win prizes. The application gamifies the savings experience, enabling users to potentially win significant rewards while holding their preferred tokens. It supports any yield-generating tokens, such as LP tokens or lending tokens like aTokens or cTokens, which can be integrated into the platform. All yield generated is converted into WETH to create a single pool of prize liquidity on each blockchain. The protocol is designed to be permissionless, allowing anyone to add new tokens, and provides a simple integration template for developers while allowing for customization in various aspects of the system."
+}

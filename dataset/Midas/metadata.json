@@ -1,0 +1,17 @@
+{
+  "name": "Midas",
+  "rid": 70,
+  "score": 59,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/midas-apps/contracts",
+  "total_audit_reports": 9,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 2,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 472,
+  "description": "Midas is a DeFi application aimed at providing institutional-grade financial products through blockchain technology. The platform focuses on creating secure, transparent, and efficient structures that allow investors to access select reference strategies in tokenized formats. Midas ensures compliance with regulatory frameworks in Europe and globally, emphasizing clarity of investor rights and responsible building practices. The team behind Midas includes experienced professionals from traditional finance and tech, who are dedicated to integrating real-world assets into DeFi and expanding the company' presence across both decentralized and traditional finance sectors. Backed by renowned investors, Midas is committed to democratizing access to high-quality financial products."
+}

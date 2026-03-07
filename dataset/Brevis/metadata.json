@@ -1,0 +1,17 @@
+{
+  "name": "Brevis",
+  "rid": 66,
+  "score": 78,
+  "category": "ZeroKnowledgeProofs",
+  "github_url": "https://github.com/brevis-network/brevis-contracts",
+  "total_audit_reports": 38,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 1,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 137,
+  "description": "Brevis is a ZK coprocessor designed to enhance smart contracts by enabling them to access and compute with full historical on-chain data from various blockchains in a trust-free manner. This application facilitates innovative use cases in the DeFi space, such as data-driven features for user engagement, active liquidity management, and identity verification across multiple chains. Integrating Brevis into a decentralized application (dApp) involves three straightforward steps: accessing historical data through APIs, deploying customized logic using the SDK, and submitting computation results along with ZK proofs back on-chain for verification. Developers can leverage Brevis to create advanced functionalities, exemplified by the Uniswap v4 trading fee discount hook, showcasing the practical applications of this technology."
+}

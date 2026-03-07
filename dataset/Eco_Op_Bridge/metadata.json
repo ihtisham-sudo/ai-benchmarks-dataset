@@ -1,0 +1,17 @@
+{
+  "name": "Eco Op Bridge ",
+  "rid": 127,
+  "score": 60,
+  "category": "Bridge",
+  "github_url": "https://github.com/eco-association/op-eco",
+  "total_audit_reports": 2,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 16,
+  "description": "Eco is a stablecoin liquidity layer designed to enhance cross-chain transactions for onchain applications and protocols. Its products, Eco Routes and Eco Accounts, simplify access to stablecoin liquidity for developers and users, enabling seamless one-click transactions across different networks. The Crowd Liquidity platform allows builders and stablecoin holders to share liquidity efficiently, ensuring that stablecoins in connected wallets continuously earn yield. By addressing the inefficiencies in the current infrastructure, Eco aims to provide a secure and user-friendly experience, ultimately increasing accessibility and reducing transaction costs in the decentralized finance ecosystem."
+}

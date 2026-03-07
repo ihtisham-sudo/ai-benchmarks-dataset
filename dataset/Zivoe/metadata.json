@@ -1,0 +1,17 @@
+{
+  "name": "Zivoe",
+  "rid": 90,
+  "score": 68,
+  "category": "Lending",
+  "github_url": "https://github.com/Zivoe/zivoe-core-foundry",
+  "total_audit_reports": 37,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 7,
+    "medium": 15,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 41,
+  "description": "Zivoe Finance is a decentralized finance (DeFi) application designed to provide users with a comprehensive suite of financial services. The platform offers features such as yield farming, staking, and liquidity pools, allowing users to maximize their returns on investments. It emphasizes security and transparency, utilizing blockchain technology to ensure that all transactions are verifiable and tamper-proof. Additionally, Zivoe Finance provides educational resources and documentation to help users navigate the platform and understand the intricacies of DeFi. The application aims to empower users by giving them control over their financial assets in a decentralized ecosystem."
+}

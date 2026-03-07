@@ -1,0 +1,17 @@
+{
+  "name": "Bima ",
+  "rid": 165,
+  "score": 68,
+  "category": "Stablecoin",
+  "github_url": "https://github.com/Bima-Labs/bima-v1-core/tree/main/contracts",
+  "total_audit_reports": 34,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 16,
+    "medium": 18,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "BIMA is a DeFi ecosystem designed to provide both professional and retail investors with access to high-quality yield strategies globally, all while retaining their Bitcoin holdings. The platform utilizes a stablecoin called USBD, which is over-collateralized by Bitcoin derivatives, allowing investors to stake their BTC and earn liquid-staking derivatives (LSTs). BIMA offers various vaults with different risk-reward profiles, enabling returns ranging from 15-20% APY for low-volatility strategies to 30-60% APY for higher-volatility options. Additionally, BIMA emphasizes security and scalability, with features like decentralized governance, permissioned institutional borrowing, and rigorous security audits to protect users'assets."
+}

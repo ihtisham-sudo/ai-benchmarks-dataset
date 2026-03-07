@@ -1,0 +1,17 @@
+{
+  "name": "Aloe II",
+  "rid": 121,
+  "score": 85,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/aloelabs/aloe-ii/tree/master/core",
+  "total_audit_reports": 20,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 4,
+    "medium": 10,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Aloe II is a supercharged money market application that enables borrowers to manage Uniswap V3 positions on margin, enhancing capital access for market makers and increasing yields for lenders. The platform features two user types: passive investors, who earn yields by providing assets to lending markets, and sophisticated market makers, who utilize up to 20x leverage to execute liquidity provider strategies. Each lending market is isolated to specific Uniswap V3 pairs, allowing users to assess risks based on the quality of the associated TWAP oracle. Margin accounts facilitate capital access for market makers, enabling them to create and manage leveraged positions while ensuring that the notional value of their Uniswap positions can exceed their margin assets."
+}

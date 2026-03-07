@@ -1,0 +1,17 @@
+{
+  "name": "Dinari",
+  "rid": 61,
+  "score": 54,
+  "category": "AssetManagement",
+  "github_url": "https://github.com/dinaricrypto/sbt-contracts",
+  "total_audit_reports": 4,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 3,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 22,
+  "description": "Dinari is a DeFi application designed to facilitate the purchase of US securities-backed stock tokens using stablecoins. Users must first set up a compatible wallet, such as Metamask or Coinbase, and sign in with their email. Upon the initial login, users will need to verify their identity by providing a government-issued ID and proof of residency, as verification is mandatory for accessing the platform. It is important to note that individuals from the United States and other restricted countries cannot complete the verification process at this time. Once verified, users can begin minting dStock tokens seamlessly."
+}

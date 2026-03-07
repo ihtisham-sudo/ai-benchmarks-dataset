@@ -1,0 +1,17 @@
+{
+  "name": "Burve",
+  "rid": 136,
+  "score": 78,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/sherlock-audit/2025-04-burve/tree/main/Burve",
+  "total_audit_reports": 31,
+  "vulnerability_source": "solodit",
+  "vulnerability_counts": {
+    "high": 10,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Burve is a DeFi application designed to help users earn rewards using stablecoins and liquid staked tokens (LSTs). The platform provides a comprehensive documentation to guide users through its features and functionalities. It emphasizes the benefits of earning with stable assets, making it an attractive option for investors seeking stability in the volatile crypto market. Additionally, Burve offers technical resources for auditors and developers, enhancing its appeal to builders and those looking to explore advanced features. Overall, Burve positions itself as a leading choice for users interested in maximizing their earnings with minimal risk."
+}

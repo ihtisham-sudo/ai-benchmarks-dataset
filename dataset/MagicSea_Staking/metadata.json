@@ -1,0 +1,17 @@
+{
+  "name": "MagicSea Staking",
+  "rid": 72,
+  "score": 69,
+  "category": "Staking",
+  "github_url": "https://github.com/sherlock-audit/2024-06-magicsea/tree/main/magicsea-staking",
+  "total_audit_reports": 16,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 7,
+    "medium": 9,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "MagicSea is a decentralized finance (DeFi) application that serves as an onchain Liquid Order Book DEX and NFT Marketplace on the IOTA and Shimmer EVM networks. It utilizes advanced liquidity protocols, including Liquidity Book JoeV2.2 and UniV2, to facilitate efficient trading and liquidity management. Users can engage in various activities such as trading, staking, and farming tokens to earn rewards within the platform. Additionally, MagicSea features its own tokens, $LUM and $MLUM, which are integral to its ecosystem and enhance user participation in the DeFi space."
+}

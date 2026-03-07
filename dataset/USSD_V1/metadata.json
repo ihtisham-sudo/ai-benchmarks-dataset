@@ -1,0 +1,17 @@
+{
+  "name": "USSD V1",
+  "rid": 59,
+  "score": 43,
+  "category": "Stablecoin",
+  "github_url": "https://github.com/USSDofficial/ussd-contracts",
+  "total_audit_reports": 22,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 11,
+    "medium": 11,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 21,
+  "description": "The institution of money is pivotal in human civilization, and the decentralization of money is seen as a means to protect collective progress. The crypto market, particularly Bitcoin, is expected to grow over the long term, influenced by four-year cycles linked to Bitcoin halving events. The text critiques Decentralized Autonomous Organizations (DAOs) for their lack of transparency and suggests that stablecoins come with varying centralization risks. It outlines ideal characteristics for stablecoins and discusses collateral strategies, emphasizing the importance of security and over-collateralization. Additionally, it introduces a reward system for token holders and proposes a local currency stablecoin project, inviting technology entrepreneurs to participate."
+}

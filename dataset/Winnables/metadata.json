@@ -1,0 +1,17 @@
+{
+  "name": "Winnables",
+  "rid": 51,
+  "score": 83,
+  "category": "Gaming",
+  "github_url": "https://github.com/Winnables/public-contracts",
+  "total_audit_reports": 15,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 3,
+    "medium": 7,
+    "low": 1,
+    "other": 0
+  },
+  "solidity_files": 13,
+  "description": "Winnables is revolutionizing on-chain gaming by enhancing the gaming experience for enthusiasts. The platform focuses on integrating blockchain technology to create unique and engaging gameplay. It aims to attract a community of dedicated gamers, often referred to as \"degens.\" The site emphasizes innovation and the future potential of gaming within the blockchain space. The last update was made in June 2024, indicating ongoing development and engagement."
+}

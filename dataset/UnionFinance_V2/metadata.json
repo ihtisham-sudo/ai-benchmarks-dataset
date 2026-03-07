@@ -1,0 +1,17 @@
+{
+  "name": "UnionFinance V2",
+  "rid": 68,
+  "score": 53,
+  "category": "Lending",
+  "github_url": "https://github.com/unioncredit/union-v2-contracts",
+  "total_audit_reports": 41,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 4,
+    "medium": 5,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 35,
+  "description": "Union is a member-owned credit protocol built on Ethereum that allows members to underwrite lines of credit to other member addresses. The protocol operates as a decentralized autonomous organization (DAO), enabling any address to accumulate a credit line on-chain in a permissionless manner. By aggregating lines of credit, Union members can access capital at lower costs, fostering a cycle of increased lending activity and reduced borrowing expenses. Additionally, Union brings real-world trust on-chain while maintaining user pseudonymity, creating opportunities for new business models with various loan-to-value (LTV) products. The community has also developed a user-friendly frontend to facilitate interactions with the protocol."
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Yieldoor",
+  "rid": 135,
+  "score": 70,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/sherlock-audit/2025-02-yieldoor",
+  "total_audit_reports": 16,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 12,
+    "medium": 3,
+    "low": 1,
+    "other": 0
+  },
+  "solidity_files": 26,
+  "description": "Yieldoor is a DeFi yield protocol designed to optimize capital through automated strategies in liquidity management, lending, and leveraged yield. The platform integrates advanced DeFi concepts such as concentrated liquidity, fixed-yield arbitrage, and capital-efficient leverage to cater to both passive and active users. Users can choose from various options, including stable passive returns, active high-yield strategies, or leveraged opportunities for greater upside. Yieldoor provides the necessary tools and infrastructure to enhance earnings without the need for manual position management or trend chasing."
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Axis Finance",
+  "rid": 23,
+  "score": 70,
+  "category": "Launchpad",
+  "github_url": "https://github.com/Axis-Fi/axis-core",
+  "total_audit_reports": 18,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 10,
+    "medium": 8,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 47,
+  "description": "The main purpose of the Axis application is to provide a permissionless infrastructure layer for developers to create auction-driven decentralized applications (dApps). It aims to simplify the deployment of auctions, making it as easy as deploying a liquidity pool. Axis focuses on enhancing the auction process for on-chain communities, which has been under-developed despite the advancements in DeFi for liquid assets. The platform utilizes various auction and token derivatives modules to support specific use cases, with its first application designed to facilitate next-generation token launches."
+}

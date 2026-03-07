@@ -1,0 +1,17 @@
+{
+  "name": "Kwenta Staking Contracts",
+  "rid": 7,
+  "score": 94,
+  "category": "Staking",
+  "github_url": "https://github.com/Kwenta/token",
+  "total_audit_reports": 3,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 7,
+    "low": 0,
+    "other": 54
+  },
+  "solidity_files": 38,
+  "description": "The main purpose of the Kwenta application is to manage the Kwenta token and its associated system contracts, including staking, escrow, and distribution. The Kwenta token is an extended ERC20 token with an initial supply of 313,373, and its inflationary supply schedule is designed to last for four years, targeting a total of approximately 1,009,409.43 KWENTA tokens by the end of this period. Minting occurs weekly and involves fees that support sustainable rewards, with portions of new supply allocated to the treasury and trading rewards. The application also features a modified StakingRewards contract that allows for escrowed staking, where rewards can be harvested and held for a year, with options for early vesting subject to fees."
+}

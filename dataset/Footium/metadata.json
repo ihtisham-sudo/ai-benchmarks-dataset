@@ -1,0 +1,17 @@
+{
+  "name": "Footium",
+  "rid": 120,
+  "score": 71,
+  "category": "Gaming",
+  "github_url": "https://github.com/sherlock-audit/2023-04-footium/tree/main/footium-eth-shareable",
+  "total_audit_reports": 9,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 7,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Footium is a multiplayer football management game where players own and manage a digital football club. Players can recruit and register unique squads, compete in seasons of 22 games, and face promotion or relegation based on their performance. Each club features customizable kits, unique badges, and a youth academy that generates new prospects each season. The game includes an advanced match engine for realistic gameplay, a transfer market for buying and selling players, and tactical options that allow players to adjust strategies in real-time during matches."
+}

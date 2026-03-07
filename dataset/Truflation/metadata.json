@@ -1,0 +1,17 @@
+{
+  "name": "Truflation",
+  "rid": 119,
+  "score": 83,
+  "category": "Oracle",
+  "github_url": "https://github.com/sherlock-audit/2023-12-truflation/tree/main/truflation-contracts",
+  "total_audit_reports": 25,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 3,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "The main purpose of the DeFi application is to transform financial data into valuable insights while allowing users to maintain control and earn rewards. Users can become validators, securing data and contributing to the future of finance. The application offers plug-and-play financial data that is accurate and real-time, enhancing the functionality of decentralized applications. It features an intuitive smart contract language that combines SQL familiarity with innovative blockchain technology, enabling seamless integration of validated data. Additionally, the platform provides a production-ready AI suite for Web3 builders, offering tools for real-time analytics and automated audits to support scalable blockchain applications."
+}

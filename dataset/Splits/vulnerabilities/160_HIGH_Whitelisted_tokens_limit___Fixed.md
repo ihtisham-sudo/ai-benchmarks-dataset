@@ -1,0 +1,56 @@
+# Whitelisted tokens limit ✓ Fixed
+
+**Severity:** HIGH
+**Auditor:** ConsenSys
+
+---
+
+#### Resolution
+
+
+
+mitigated by having separate limits for number of whitelisted tokens (for non-zero balance and for zero balance) in [486f1b3](https://github.com/MolochVentures/moloch/commit/486f1b3e72c8e48f614c3b22a0220de63b5320bd) and follow up commits. That’s helpful because it’s much cheaper to process tokens with zero balance in the guild bank and you can have much more whitelisted tokens overall.
+
+
+
+```
+uint256 constant MAX\_TOKEN\_WHITELIST\_COUNT = 400; // maximum number of whitelisted tokens
+uint256 constant MAX\_TOKEN\_GUILDBANK\_COUNT = 200; // maximum number of tokens with non-zero balance in guildbank
+uint256 public totalGuildBankTokens = 0; // total tokens with non-zero balance in guild bank
+
+```
+It should be noted that this is an estimated limit based on the [manual calculations](https://docs.google.com/spreadsheets/d/1LFtETGOsghYVJeTIF4v1L9cBB3IKu1LS9ypb7b-GtVY/edit#gid=0) and current OP code gas costs. DAO members should consider splitting the DAO into two if more than 100 tokens with non-zero balance are used in the DAO to be safe.
+
+
+
+
+#### Description
+
+
+`_ragequit` function is iterating over all whitelisted tokens:
+
+
+**contracts/Moloch.sol:L507-L513**
+
+
+
+```
+for (uint256 i = 0; i < tokens.length; i++) {
+    uint256 amountToRagequit = fairShare(userTokenBalances[GUILD][tokens[i]], sharesAndLootToBurn, initialTotalSharesAndLoot);
+    // deliberately not using safemath here to keep overflows from preventing the function execution (which would break ragekicks)
+    // if a token overflows, it is because the supply was artificially inflated to oblivion, so we probably don't care about it anyways
+    userTokenBalances[GUILD][tokens[i]] -= amountToRagequit;
+    userTokenBalances[memberAddress][tokens[i]] += amountToRagequit;
+}
+
+```
+If the number of tokens is too big, a transaction can run out of gas and all funds will be blocked forever. Ballpark estimation of this number is around 300 tokens based on the current OpCode gas costs and the block gas limit.
+
+
+#### Recommendation
+
+
+A simple solution would be just limiting the number of whitelisted tokens.
+
+
+If the intention is to invest in many new tokens over time, and it’s not an option to limit the number of whitelisted tokens, it’s possible to add a function that removes tokens from the whitelist. For example, it’s possible to add a new type of proposals, that is used to vote on token removal if the balance of this token is zero. Before voting for that, shareholders should sell all the balance of that token.

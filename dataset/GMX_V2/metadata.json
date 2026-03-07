@@ -1,0 +1,17 @@
+{
+  "name": "GMX V2",
+  "rid": 50,
+  "score": 78,
+  "category": "Perpetuals",
+  "github_url": "https://github.com/gmx-io/gmx-synthetics",
+  "total_audit_reports": 151,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 7,
+    "medium": 9,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 254,
+  "description": "GMX is a decentralized exchange designed for spot and perpetual trading with a focus on low fees and minimal price impact. It utilizes unique multi-asset pools that allow liquidity providers to earn fees from market making, swap fees, and leveraged trading activities. The platform employs Chainlink Oracles to ensure dynamic pricing by aggregating data from leading volume exchanges. Additionally, GMX offers various resources for token holders, liquidity providers, and traders to enhance their experience and maximize their potential rewards."
+}

@@ -1,0 +1,111 @@
+# Issue M-4: User can brick the Bracket contract by inputing malicious txData
+
+**Severity:** medium
+**Auditor:** Sherlock
+**Protocol:** Oku Trade Orders
+**Keywords:** Bracket contract, malicious txData, safeApprove, ERC20, OpenZeppelin, allowance, swap functionality, token locking, performUpkeep, execute function, attack path, security vulnerability, smart contract, funds locking, txData manipulation, contract bricking, upgrade, forceApprove, protocol team, PoC
+
+---
+
+# Issue M-4: User can brick the Bracket contract by inputing malicious txData
+
+Source: [https://github.com/sherlock-audit/2024-11-oku-judging/issues/202](https://github.com/sherlock-audit/2024-11-oku-judging/issues/202)  
+Found by: 0xaxaxa, 0xloscar01, 0xpetern, 10ap17, AshishLac, ChinmayF, ExtraCaterpillar, KiroBrejka, Laksmana, Sparrow_Jac, ZanyBonzy, auditism, jah, phoenixv110, t.aksoy, t0x1c, whitehair0330, wickie, y51r
+
+## Summary
+
+User can brick the Bracket contract by inputing malicious txData. This is possible because in all of the swap related contracts (OracleLess, Bracket), the txData is provided from the caller one way or another. This will brick the swapping functionality of any token practically locking the funds of every user in the contract. Part of this happens due to the behaviour of safeApprove function, which looks like this:
+
+\u0060\u0060\u0060solidity
+function safeApprove(IERC20 token, address spender, uint256 value) internal {
+    // safeApprove should only be called when setting an initial allowance,
+    // or when resetting it to zero. To increase and decrease it, use
+    // \u0027safeIncreaseAllowance\u0027 and \u0027safeDecreaseAllowance\u0027
+    require(
+        (value == 0) || (token.allowance(address(this), spender) == 0),
+        "SafeERC20: approve from non-zero to non-zero allowance"
+    );
+    _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector,
+    spender, value));
+}
+\u0060\u0060\u0060
+
+As seen in the block of code, the function requires the value of approval to be 0 or the existing allowance to be 0 in order for the tx to go through.
+
+## Root Cause
+
+The behaviour of safeApprove function, which is due to the old OpenZeppelin version used in the system.
+## Internal pre-conditions
+User performing an upkeep with malicious txData that will leave 1 wei of a corresponding worth of allowance, which will be enough for the execute function to revert at the following line:
+
+\u0060\u0060\u0060solidity
+function execute(
+  address target,
+  bytes memory txData,
+  uint256 amountIn,
+  IERC20 tokenIn,
+  IERC20 tokenOut,
+  uint16 bips
+) internal returns (uint256 swapAmountOut, uint256 tokenInRefund) {
+  // update accounting
+  uint256 initialTokenIn = tokenIn.balanceOf(address(this));
+  uint256 initialTokenOut = tokenOut.balanceOf(address(this));
+  // approve
+  tokenIn.safeApprove(target, amountIn);
+}
+\u0060\u0060\u0060
+
+## External pre-conditions
+None
+
+## Attack Path
+1. User creates an order
+2. The order is ready to be fulfilled (Ready for the performUpkeep function to be called)
+3. As seen in the following block of code, the caller of performUpkeep function is allowed to specify his performData input, meaning he is absolutely free to compute the malicious txData, which will have amountIn - 1 as the amount that the target address needs to swap:
+
+\u0060\u0060\u0060solidity
+function performUpkeep(
+  bytes calldata performData
+) external override nonReentrant {
+}
+\u0060\u0060\u0060
+
+4. The execute function is called, and the following block of code is executed:
+
+\u0060\u0060\u0060solidity
+function execute(
+  address target,
+  bytes memory txData,
+  uint256 amountIn,
+  IERC20 tokenIn,
+  IERC20 tokenOut,
+) internal returns (uint256 swapAmountOut, uint256 tokenInRefund) {
+}
+\u0060\u0060\u0060
+\u0060\u0060\u0060solidity
+uint16 bips
+) internal returns (uint256 swapAmountOut, uint256 tokenInRefund) {
+   //update accounting
+   uint256 initialTokenIn = tokenIn.balanceOf(address(this));
+   uint256 initialTokenOut = tokenOut.balanceOf(address(this));
+   //approve
+   tokenIn.safeApprove(target, amountIn);
+   //perform the call
+   (bool success, bytes memory result) = target.call(txData);
+}
+\u0060\u0060\u0060
+We approve the target address with amountIn, which is the amount In saved in the orders mapping. Then, after the swap is performed, the target address would have used amountIn - 1 tokens to perform the swap, leaving it with 1 wei worth of the corresponding token of allowance, which due to the safeApprove behaviour will revert the function every time someone tries to swap with the same token In as the attackers swapped.
+
+## Impact
+User can block the usage of every single existing ERC20 including those the system wants to comply with.
+
+## PoC
+No response.
+
+## Mitigation
+The OpenZeppelin version is outdated. Upgrade the version to the newest one possible and use forceApprove instead of safeApprove.
+
+## Discussion
+sherlock-admin2
+The protocol team fixed this issue in the following PRs/commits:
+[https://github.com/gfx-labs/oku-custom-order-types/pull/1](https://github.com/gfx-labs/oku-custom-order-types/pull/1)

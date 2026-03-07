@@ -1,0 +1,17 @@
+{
+  "name": "Tokemak",
+  "rid": 124,
+  "score": 93,
+  "category": "CrosschainLiquidity",
+  "github_url": "https://github.com/Tokemak/v2-core-pub",
+  "total_audit_reports": 68,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 16,
+    "medium": 19,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 318,
+  "description": "The main purpose of Tokemak' Autopilot is to simplify and optimize the liquidity provision process for liquidity providers (LPs) in decentralized finance (DeFi). The application addresses the complexities LPs face when trying to rebalance their positions by offering a fully autonomous and transparent solution. It takes into account various factors such as yield variance, fee structures, and the costs associated with gas and trading fees, which are crucial for effective liquidity management. By streamlining the decision-making process and reducing the time spent on research and protocol interactions, Tokemak' Autopilot enhances the overall efficiency and accessibility of liquidity provision for a broader range of ecosystem participants."
+}

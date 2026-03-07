@@ -1,0 +1,17 @@
+{
+  "name": "Velocitimeter V4",
+  "rid": 57,
+  "score": 88,
+  "category": "DEX",
+  "github_url": "https://github.com/Velocimeter/contracts-latest",
+  "total_audit_reports": 24,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 9,
+    "medium": 9,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 42,
+  "description": "The main purpose of the DeFi application is to enhance liquidity provision through the introduction of veLPs, which utilize Liquidity Pool tokens instead of just VM reward tokens. This upgrade ensures that liquidity providers have a vested interest in the system, as veLPs are tied to actual liquidity rather than merely reward tokens. Additionally, the distribution of option token exercise fees has been refined, directing them solely to veLP holders and paid out in a lump sum at the end of each epoch. The emission schedule in V4 is designed to be more efficient, adjusting based on the number of active gauges to prevent wasteful early emissions, while allowing anyone to create gauges under specific conditions."
+}

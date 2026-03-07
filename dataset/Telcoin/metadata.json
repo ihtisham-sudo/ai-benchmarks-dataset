@@ -1,0 +1,17 @@
+{
+  "name": "Telcoin",
+  "rid": 41,
+  "score": 69,
+  "category": "Services",
+  "github_url": "https://github.com/Telcoin-Association/tn-contracts",
+  "total_audit_reports": 24,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 4,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 27,
+  "description": "The main purpose of the Telcoin Network is to provide a secure, EVM-compatible blockchain that facilitates the ownership and management of digital assets through decentralized applications. It is supported by global Mobile Network Operators and utilizes a proof of stake consensus mechanism to ensure security and efficiency. The documentation offers comprehensive guidance for developers, including sections on getting started, reading and writing blockchain data, and building decentralized applications. Additionally, it provides reference materials for connecting to the network and interacting with nodes, with a strong recommendation for Windows users to utilize WSL2 for optimal compatibility."
+}

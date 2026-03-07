@@ -1,0 +1,17 @@
+{
+  "name": "Wildcat V2",
+  "rid": 84,
+  "score": 79,
+  "category": "Lending",
+  "github_url": "https://github.com/wildcat-finance/v2-protocol",
+  "total_audit_reports": 59,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 8,
+    "low": 0,
+    "other": 11
+  },
+  "solidity_files": 57,
+  "description": "Wildcat is a decentralized protocol designed to enable undercollateralized borrowing and lending, allowing borrowers to customize their loan terms while providing lenders with new opportunities. Unlike traditional overcollateralized solutions, Wildcat empowers users to define their loan amounts, interest rates, and redemption terms, offering greater flexibility in the credit market. The platform facilitates direct lending to specific borrowers, ensuring more targeted credit exposure and predictable returns through fixed interest rates. Additionally, Wildcat' open-source Master Loan Agreement aligns on-chain interactions with traditional credit agreements, while the protocol itself does not assess borrower creditworthiness, placing the responsibility of risk evaluation on lenders."
+}

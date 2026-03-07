@@ -1,0 +1,1002 @@
+// SPDX-License-Identifier: MIT or Apache-2.0
+pragma solidity 0.8.26;
+
+import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { SignatureCheckerLib } from "solady/utils/SignatureCheckerLib.sol";
+import { ReentrancyGuard } from "solady/utils/ReentrancyGuard.sol";
+import { RewardInfo, Slash, IStakeManager } from "../interfaces/IStakeManager.sol";
+import { StakeManager } from "./StakeManager.sol";
+import { IConsensusRegistry } from "../interfaces/IConsensusRegistry.sol";
+import { SystemCallable } from "./SystemCallable.sol";
+import { Issuance } from "./Issuance.sol";
+import { BlsG1 } from "./BlsG1.sol";
+
+/**
+ * @title ConsensusRegistry
+ * @author Telcoin Association
+ * @notice A Telcoin Contract
+ *
+ * @notice This contract manages consensus validator external keys, staking, and committees
+ * @dev This contract should be deployed to a predefined system address for use with system calls
+ */
+contract ConsensusRegistry is StakeManager, Pausable, Ownable, ReentrancyGuard, SystemCallable, IConsensusRegistry {
+    using BlsG1 for bytes;
+
+    uint32 internal currentEpoch;
+    uint8 internal epochPointer;
+    uint16 internal nextCommitteeSize;
+    uint256 public undistributedIssuance;
+    mapping(address => ValidatorInfo) public validators;
+    mapping(bytes32 => address) private blsPubkeyHashToValidator;
+    EpochInfo[4] public epochInfo;
+    EpochInfo[4] public futureEpochInfo;
+
+    /// @dev Signals a validator's pending status until activation/exit to correctly apply incentives
+    uint32 internal constant PENDING_EPOCH = type(uint32).max;
+
+    /// @notice Fixed prefixes inserted by rust protocol; see `proofOfPossessionMessage()`
+    /// @dev The proof of possession message prefix, used by the protocol to differentiate BLS proof intents
+    bytes5 constant POP_INTENT_PREFIX = 0x000000d501;
+    /// @dev The proof of possession's validator address length prefix, signifying 20 byte length encoding
+    bytes1 constant ADDRESS_LEN_PREFIX = 0x14;
+
+    /**
+     *
+     *   consensus
+     *
+     */
+
+    /// @inheritdoc IConsensusRegistry
+    function concludeEpoch(address[] calldata futureCommittee) external override onlySystemCall {
+        // ensure future committee is sorted
+        _enforceSorting(futureCommittee);
+
+        // ensure future committee is the correct length
+        if (futureCommittee.length != nextCommitteeSize) {
+            revert InvalidCommitteeSize(nextCommitteeSize, futureCommittee.length);
+        }
+
+        // update epoch ring buffer info, validator queue
+        (uint32 newEpoch, uint256 issuance, uint32 duration, address[] memory newCommittee) =
+            _updateEpochInfo(futureCommittee);
+        _updateValidatorQueue(futureCommittee, newEpoch);
+
+        // assert future epoch committee is valid against total now eligible
+        ValidatorInfo[] memory newActive = _getValidators(ValidatorStatus.Active);
+        _checkCommitteeSize(newActive.length, futureCommittee.length);
+
+        emit NewEpoch(EpochInfo(newCommittee, issuance, uint64(block.number + 1), newEpoch, duration, stakeVersion));
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function applyIncentives(RewardInfo[] calldata rewardInfos) public override onlySystemCall {
+        // identify total & individual weight factoring in stake & consensus headers
+        uint256 totalWeight;
+        uint256[] memory weights = new uint256[](rewardInfos.length);
+        for (uint256 i; i < rewardInfos.length; ++i) {
+            RewardInfo calldata reward = rewardInfos[i];
+            if (reward.consensusHeaderCount == 0) continue;
+
+            // signed consensus header means validator is whitelisted, staked, & active
+            // unless validator was forcibly retired & ejected via burn: skip
+            if (isRetired(reward.validatorAddress)) continue;
+
+            uint8 rewardeeVersion = validators[reward.validatorAddress].stakeVersion;
+            // derive validator's weight using initial stake for stability
+            uint256 stakeAmount = versions[rewardeeVersion].stakeAmount;
+            uint256 weight = stakeAmount * reward.consensusHeaderCount;
+
+            totalWeight += weight;
+            weights[i] = weight;
+        }
+
+        if (totalWeight == 0) return;
+
+        // get epoch issuance amount and incorporate dust from the previous epoch
+        uint256 epochIssuance = getCurrentEpochInfo().epochIssuance;
+        uint256 totalAvailableToDistribute = epochIssuance + undistributedIssuance;
+
+        // derive and apply validator's weighted share of epoch issuance
+        uint256 amountDistributed;
+        for (uint256 i; i < rewardInfos.length; ++i) {
+            // will be 0 if `epochIssuance` is too small or `totalWeight` too large (many validators and/or headers)
+            uint256 rewardAmount = (totalAvailableToDistribute * weights[i]) / totalWeight;
+
+            if (rewardAmount > 0) {
+                balances[rewardInfos[i].validatorAddress] += rewardAmount;
+                amountDistributed += rewardAmount;
+            }
+        }
+
+        // roll over any remaining dust to the next epoch
+        undistributedIssuance = totalAvailableToDistribute - amountDistributed;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function applySlashes(Slash[] calldata slashes) external override onlySystemCall {
+        for (uint256 i; i < slashes.length; ++i) {
+            Slash calldata slash = slashes[i];
+            // signed consensus header means validator is whitelisted, staked, & active
+            // unless validator was forcibly retired & ejected via burn: skip
+            if (isRetired(slash.validatorAddress)) continue;
+
+            if (balances[slash.validatorAddress] > slash.amount) {
+                balances[slash.validatorAddress] -= slash.amount;
+            } else {
+                // eject validators whose balance would reach 0
+                _consensusBurn(slash.validatorAddress);
+            }
+
+            emit ValidatorSlashed(slash);
+        }
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function setNextCommitteeSize(uint16 newSize) external onlyOwner {
+        if (newSize == 0) {
+            revert InvalidCommitteeSize(epochInfo[epochPointer].committee.length, 0);
+        }
+
+        // Validate against current eligible validators
+        ValidatorInfo[] memory eligible = _getValidators(ValidatorStatus.Active);
+        if (newSize > eligible.length) {
+            revert InvalidCommitteeSize(eligible.length, uint256(newSize));
+        }
+
+        uint16 oldSize = nextCommitteeSize;
+        nextCommitteeSize = newSize;
+
+        emit NextCommitteeSizeUpdated(oldSize, newSize, eligible.length);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getNextCommitteeSize() external view returns (uint16) {
+        return nextCommitteeSize;
+    }
+
+    /// @inheritdoc IStakeManager
+    function getCurrentStakeVersion() public view override returns (uint8) {
+        return getCurrentEpochInfo().stakeVersion;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getCurrentEpoch() public view returns (uint32) {
+        return currentEpoch;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getCurrentEpochInfo() public view returns (EpochInfo memory) {
+        return _getRecentEpochInfo(currentEpoch, currentEpoch, epochPointer);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getEpochInfo(uint32 epoch) public view returns (EpochInfo memory) {
+        uint32 current = currentEpoch;
+        if (epoch > current + 2 || (current >= 3 && epoch < current - 3)) {
+            revert InvalidEpoch(epoch);
+        }
+
+        uint8 currentPointer = epochPointer;
+        if (epoch > current) {
+            return _getFutureEpochInfo(epoch, current, currentPointer);
+        } else {
+            return _getRecentEpochInfo(epoch, current, currentPointer);
+        }
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getValidators(ValidatorStatus status) public view returns (ValidatorInfo[] memory) {
+        if (status == ValidatorStatus.Undefined) revert InvalidStatus(status);
+
+        return _getValidators(status);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getCommitteeValidators(uint32 epoch) public view returns (ValidatorInfo[] memory) {
+        address[] memory committee = getEpochInfo(epoch).committee;
+        ValidatorInfo[] memory committeeValidators = new ValidatorInfo[](committee.length);
+        for (uint256 i; i < committeeValidators.length; ++i) {
+            committeeValidators[i] = getValidator(committee[i]);
+        }
+
+        return committeeValidators;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function getValidator(address validatorAddress) public view returns (ValidatorInfo memory) {
+        ValidatorInfo storage info = validators[validatorAddress];
+        // if the queried validator is retired it is confirmed to have existed
+        if (!info.isRetired) {
+            // else validate input
+            _checkConsensusNFTOwner(validatorAddress);
+        }
+
+        return info;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function isValidator(bytes calldata blsPubkey) public view returns (bool) {
+        // validate bls pubkey format (must be 96 bytes)
+        if (blsPubkey.length != 96) return false;
+
+        // get the hash and check if this pubkey was ever used
+        bytes32 blsPubkeyHash = keccak256(blsPubkey);
+        address validatorAddress = blsPubkeyHashToValidator[blsPubkeyHash];
+
+        // if no validator address found, return false
+        if (validatorAddress == address(0)) return false;
+
+        // check if validator is retired
+        // this also checks if the nft still exists (not burned)
+        if (isRetired(validatorAddress)) return false;
+
+        return true;
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function isRetired(address validatorAddress) public view returns (bool) {
+        if (_exists(_getTokenId(validatorAddress))) {
+            // validator exists but has not yet retired
+            return false;
+        } else if (validators[validatorAddress].currentStatus == ValidatorStatus.Undefined) {
+            // validator doesn't exist but never existed in the first place
+            return false;
+        }
+
+        return validators[validatorAddress].isRetired;
+    }
+
+    /// @inheritdoc StakeManager
+    function getRewards(address validatorAddress) public view override returns (uint256) {
+        uint8 stakeVersion = validators[validatorAddress].stakeVersion;
+        uint256 initialStake = versions[stakeVersion].stakeAmount;
+
+        return _getRewards(validatorAddress, initialStake);
+    }
+
+    /// @inheritdoc StakeManager
+    function getBalanceBreakdown(address validatorAddress) public view override returns (uint256, uint256, uint256) {
+        uint8 validatorVersion = validators[validatorAddress].stakeVersion;
+        uint256 initialStakeAmount = versions[validatorVersion].stakeAmount;
+        uint256 rewards = _getRewards(validatorAddress, initialStakeAmount);
+        uint256 outstandingBalance = balances[validatorAddress];
+
+        return (outstandingBalance, initialStakeAmount, rewards);
+    }
+
+    /// @inheritdoc IStakeManager
+    function delegationDigest(
+        bytes memory blsPubkey,
+        address validatorAddress,
+        address delegator
+    )
+        external
+        view
+        override
+        returns (bytes32)
+    {
+        _checkConsensusNFTOwner(validatorAddress);
+        uint8 stakeVersion = getCurrentEpochInfo().stakeVersion;
+        uint64 nonce = delegations[validatorAddress].nonce;
+        bytes32 blsPubkeyHash = keccak256(blsPubkey);
+        bytes32 structHash =
+            keccak256(abi.encode(DELEGATION_TYPEHASH, blsPubkeyHash, validatorAddress, delegator, stakeVersion, nonce));
+
+        return _hashTypedData(structHash);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function proofOfPossessionMessage(
+        bytes memory blsPubkeyUncompressed,
+        address validatorAddress
+    )
+        public
+        view
+        returns (bytes memory)
+    {
+        bytes memory blsPubkeyEIP2537 = BlsG1.encodeG2PointForEIP2537(blsPubkeyUncompressed);
+        if (!BlsG1.validatePointG2(blsPubkeyEIP2537)) revert BlsG1.InvalidBLSPubkey();
+
+        return bytes.concat(POP_INTENT_PREFIX, blsPubkeyUncompressed, ADDRESS_LEN_PREFIX, bytes20(validatorAddress));
+    }
+
+    /**
+     *
+     *   validators
+     *
+     */
+
+    /// @inheritdoc StakeManager
+    function stake(
+        bytes calldata blsPubkey,
+        BlsG1.ProofOfPossession memory proofOfPossession
+    )
+        external
+        payable
+        override
+        whenNotPaused
+    {
+        // verify the BLS signature proves caller's ownership of the BLS secret key
+        _verifyProofOfPossession(proofOfPossession, msg.sender, blsPubkey);
+
+        // require caller is known & whitelisted, having been issued a ConsensusNFT by governance
+        uint8 validatorVersion = getCurrentEpochInfo().stakeVersion;
+        uint256 stakeAmt = _checkStakeValue(msg.value, validatorVersion);
+        _checkConsensusNFTOwner(msg.sender);
+        // require validator has not yet staked
+        _checkValidatorStatus(msg.sender, ValidatorStatus.Undefined);
+
+        // enter validator in activation queue
+        _recordStaked(blsPubkey, msg.sender, false, validatorVersion, stakeAmt);
+    }
+
+    /// @inheritdoc StakeManager
+    function delegateStake(
+        bytes calldata blsPubkey,
+        BlsG1.ProofOfPossession memory proofOfPossession,
+        address validatorAddress,
+        bytes calldata validatorEIP712Signature
+    )
+        external
+        payable
+        override
+        whenNotPaused
+    {
+        // verify the delegate has obtained validator's BLS signature proving ownership of the BLS secret key
+        bytes32 blsPubkeyHash = _verifyProofOfPossession(proofOfPossession, validatorAddress, blsPubkey);
+
+        // require `validatorAddress` is known & whitelisted, having been issued a ConsensusNFT by governance
+        uint8 validatorVersion = getCurrentEpochInfo().stakeVersion;
+        uint256 stakeAmt = _checkStakeValue(msg.value, validatorVersion);
+        _checkConsensusNFTOwner(validatorAddress);
+
+        // require validator status is `Undefined`
+        _checkValidatorStatus(validatorAddress, ValidatorStatus.Undefined);
+        uint64 nonce = delegations[validatorAddress].nonce;
+
+        // governance may utilize white-glove onboarding or offchain agreements
+        if (msg.sender != owner()) {
+            bytes32 structHash = keccak256(
+                abi.encode(DELEGATION_TYPEHASH, blsPubkeyHash, validatorAddress, msg.sender, validatorVersion, nonce)
+            );
+            bytes32 digest = _hashTypedData(structHash);
+            if (!SignatureCheckerLib.isValidSignatureNowCalldata(validatorAddress, digest, validatorEIP712Signature)) {
+                revert NotValidator(validatorAddress);
+            }
+        }
+
+        delegations[validatorAddress] =
+            Delegation(blsPubkeyHash, validatorAddress, msg.sender, validatorVersion, nonce + 1);
+        _recordStaked(blsPubkey, validatorAddress, true, validatorVersion, stakeAmt);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function activate() external override whenNotPaused {
+        // require caller is whitelisted, having been issued a ConsensusNFT by governance
+        _checkConsensusNFTOwner(msg.sender);
+
+        // require caller status is `Staked`
+        _checkValidatorStatus(msg.sender, ValidatorStatus.Staked);
+
+        ValidatorInfo storage validator = validators[msg.sender];
+        // begin validator activation, completing automatically next epoch
+        _beginActivation(validator, currentEpoch);
+    }
+
+    /// @inheritdoc StakeManager
+    function claimStakeRewards(address validatorAddress) external override whenNotPaused nonReentrant {
+        // require validator is whitelisted, having been issued a ConsensusNFT by governance
+        _checkConsensusNFTOwner(validatorAddress);
+        uint8 validatorVersion = validators[validatorAddress].stakeVersion;
+
+        // require caller is either the validator or its delegator
+        address recipient = _getRecipient(validatorAddress);
+        if (msg.sender != validatorAddress && msg.sender != recipient) revert NotRecipient(recipient);
+        uint256 rewards = _claimStakeRewards(validatorAddress, recipient, validatorVersion);
+
+        emit RewardsClaimed(recipient, rewards);
+    }
+
+    /// @inheritdoc IConsensusRegistry
+    function beginExit() external override whenNotPaused {
+        // require caller is whitelisted, having been issued a ConsensusNFT by governance
+        _checkConsensusNFTOwner(msg.sender);
+
+        // disallow filling up the exit queue
+        uint256 numActive = _getValidators(ValidatorStatus.Active).length;
+        uint256 committeeSize = epochInfo[epochPointer].committee.length;
+        _checkCommitteeSize(numActive, committeeSize);
+
+        // require caller status is `Active` and `currentEpoch >= activationEpoch`
+        _checkValidatorStatus(msg.sender, ValidatorStatus.Active);
+        ValidatorInfo storage validator = validators[msg.sender];
+        uint32 current = currentEpoch;
+        if (current < validators[msg.sender].activationEpoch) {
+            revert InvalidEpoch(current);
+        }
+
+        // enter validator in pending exit queue
+        _beginExit(validator);
+    }
+
+    /// @inheritdoc StakeManager
+    function unstake(address validatorAddress) external override whenNotPaused nonReentrant {
+        // require validator is whitelisted, having been issued a ConsensusNFT by governance
+        _checkConsensusNFTOwner(validatorAddress);
+
+        // require caller is either the validator or its delegator
+        address recipient = _getRecipient(validatorAddress);
+        if (msg.sender != validatorAddress && msg.sender != recipient) revert NotRecipient(recipient);
+
+        ValidatorInfo storage validator = validators[validatorAddress];
+        // stake originator can only reclaim stake pre-activation or one epoch after exiting
+        if (!_eligibleForUnstake(validator)) revert IneligibleUnstake(validator);
+
+        // permanently retire the validator and burn the ConsensusNFT
+        _retire(validator);
+
+        // return stake and send any outstanding rewards
+        uint256 stakeAndRewards = _unstake(validatorAddress, recipient);
+
+        emit RewardsClaimed(recipient, stakeAndRewards);
+    }
+
+    /**
+     *
+     *   ERC721
+     *
+     */
+
+    /// @inheritdoc StakeManager
+    function mint(address validatorAddress) external override onlyOwner {
+        // validators may only possess one token and `validatorAddress` cannot be reused
+        if (balanceOf(validatorAddress) != 0 || isRetired(validatorAddress)) {
+            revert AlreadyDefined(validatorAddress);
+        }
+
+        // issue the ConsensusNFT
+        _mint(validatorAddress, _getTokenId(validatorAddress));
+    }
+
+    /// @inheritdoc StakeManager
+    function burn(address validatorAddress) external override onlyOwner {
+        if (isRetired(validatorAddress)) revert InvalidStatus(ValidatorStatus.Any);
+        // require validatorAddress is whitelisted, having been issued a ConsensusNFT by governance
+        _checkConsensusNFTOwner(validatorAddress);
+
+        if (validators[validatorAddress].currentStatus == ValidatorStatus.Undefined) {
+            // immediately remove validators that were whitelisted but never staked (without setting epochs)
+            _retire(validators[validatorAddress]);
+            _burn(_getTokenId(validatorAddress));
+        } else {
+            // validators that have staked are exited, retired, and then unstaked
+            _consensusBurn(validatorAddress);
+        }
+    }
+
+    /// @inheritdoc StakeManager
+    function allocateIssuance() external payable override onlyOwner {
+        (bool r,) = issuance.call{ value: msg.value }("");
+        require(r, "Impossible condition");
+    }
+
+    /**
+     *
+     *   internals
+     *
+     */
+
+    /// @param g1Pop The Proof Of Possession generated by a validator
+    /// @param validatorAddress The validator's execution address
+    /// @param blsPubkey The compressed 96-byte representation of `validatorAddress`s G2 BLS pubkey
+    /// @notice This contract does not perform any (un)compression on `blsPubkey` due to EVM constraints
+    function _verifyProofOfPossession(
+        BlsG1.ProofOfPossession memory g1Pop,
+        address validatorAddress,
+        bytes memory blsPubkey
+    )
+        internal
+        returns (bytes32)
+    {
+        if (blsPubkey.length != 96) revert BlsG1.InvalidBLSPubkey();
+
+        bytes memory popMessage = proofOfPossessionMessage(g1Pop.uncompressedPubkey, validatorAddress);
+        bytes memory eip2537Pubkey = BlsG1.encodeG2PointForEIP2537(g1Pop.uncompressedPubkey);
+        bytes memory eip2537Signature = BlsG1.encodeG1PointForEIP2537(g1Pop.uncompressedSignature);
+        if (!BlsG1.verifyProofOfPossessionG1(eip2537Pubkey, eip2537Signature, popMessage, BlsG1.HASH_TO_G1_DST)) {
+            revert InvalidProofOfPossession(g1Pop, popMessage);
+        }
+
+        // prevent duplicate compressed pubkeys
+        return _spendBLSPubkey(blsPubkey, validatorAddress);
+    }
+
+    /// @notice Spends `blsPubkey`. Must be an externally validated G2 point in 96-byte compressed form
+    function _spendBLSPubkey(
+        bytes memory blsPubkey,
+        address validatorAddress
+    )
+        private
+        returns (bytes32 blsPubkeyHash)
+    {
+        blsPubkeyHash = keccak256(blsPubkey);
+        if (blsPubkeyHashToValidator[blsPubkeyHash] != address(0)) revert DuplicateBLSPubkey();
+        blsPubkeyHashToValidator[blsPubkeyHash] = validatorAddress;
+
+        return blsPubkeyHash;
+    }
+
+    /// @notice Enters a validator into the activation queue upon receiving stake
+    /// @dev Stores the new validator in the `validators` vector
+    function _recordStaked(
+        bytes calldata blsPubkey,
+        address validatorAddress,
+        bool isDelegated,
+        uint8 stakeVersion,
+        uint256 stakeAmt
+    )
+        internal
+    {
+        ValidatorInfo memory newValidator = ValidatorInfo(
+            blsPubkey,
+            validatorAddress,
+            PENDING_EPOCH,
+            uint32(0),
+            ValidatorStatus.Staked,
+            false,
+            isDelegated,
+            stakeVersion
+        );
+        validators[validatorAddress] = newValidator;
+        balances[validatorAddress] = stakeAmt;
+
+        emit ValidatorStaked(newValidator);
+    }
+
+    /// @dev Sets the next epoch as activation timestamp for epoch completeness wrt incentives
+    function _beginActivation(ValidatorInfo storage validator, uint32 epoch) internal {
+        validator.activationEpoch = epoch + 1;
+        validator.currentStatus = ValidatorStatus.PendingActivation;
+
+        emit ValidatorPendingActivation(validator);
+    }
+
+    /// @dev Activates a validator
+    /// @dev Performed by protocol system call at commencement of validator's first full epoch
+    function _activate(ValidatorInfo storage validator) internal {
+        validator.currentStatus = ValidatorStatus.Active;
+
+        emit ValidatorActivated(validator);
+    }
+
+    /// @notice Enters a validator into the exit queue
+    /// @dev Finalized by the protocol when the validator is no longer required for committees
+    function _beginExit(ValidatorInfo storage validator) internal {
+        validator.currentStatus = ValidatorStatus.PendingExit;
+        validator.exitEpoch = PENDING_EPOCH;
+
+        emit ValidatorPendingExit(validator);
+    }
+
+    /// @notice Exits a validator from the network,
+    /// @dev Only invoked via protocol client system call to `concludeEpoch()` or governance ejection
+    /// @dev Once exited, the validator may unstake to reclaim their stake and rewards
+    function _exit(ValidatorInfo storage validator, uint32 epoch) internal {
+        validator.currentStatus = ValidatorStatus.Exited;
+        validator.exitEpoch = epoch;
+
+        emit ValidatorExited(validator);
+    }
+
+    /// @notice Permanently retires validator from the network
+    /// @dev Ensures an validator cannot rejoin after exiting + unstaking or after governance ejection
+    /// @dev Rejoining must be done by restarting validator onboarding process with new keys and tokenId
+    function _retire(ValidatorInfo storage validator) internal {
+        validator.currentStatus = ValidatorStatus.Any;
+        validator.isRetired = true;
+
+        emit ValidatorRetired(validator);
+    }
+
+    /// @notice Performs activation and/or exit for validators pending in queue where applicable
+    /// @dev Validators initiate activation, gaining `PendingActivation` status which resolves to
+    /// `Active` at the end of the current epoch. Since they could time activation initiation
+    /// with the epoch boundary, they are ineligible for rewards until completing a full epoch
+    /// @dev Protocol determines exit eligibility via voter committee assignments across 3 epochs
+    function _updateValidatorQueue(address[] calldata futureCommittee, uint32 current) internal {
+        ValidatorInfo[] memory pendingActivation = _getValidators(ValidatorStatus.PendingActivation);
+        for (uint256 i; i < pendingActivation.length; ++i) {
+            ValidatorInfo storage activateValidator = validators[pendingActivation[i].validatorAddress];
+
+            _activate(activateValidator);
+        }
+
+        ValidatorInfo[] memory pendingExit = _getValidators(ValidatorStatus.PendingExit);
+        uint8 currentEpochPointer = epochPointer;
+        uint8 nextEpochPointer = (currentEpochPointer + 1) % 4;
+        address[] memory currentCommittee = epochInfo[currentEpochPointer].committee;
+        address[] memory nextCommittee = futureEpochInfo[nextEpochPointer].committee;
+        for (uint256 i; i < pendingExit.length; ++i) {
+            // skip if validator is in current or either future committee
+            address validatorAddress = pendingExit[i].validatorAddress;
+            if (
+                _isCommitteeMember(validatorAddress, currentCommittee)
+                    || _isCommitteeMember(validatorAddress, nextCommittee)
+                    || _isCommitteeMember(validatorAddress, futureCommittee)
+            ) continue;
+
+            ValidatorInfo storage exitValidator = validators[validatorAddress];
+            _exit(exitValidator, current);
+        }
+    }
+
+    /// @notice Forcibly eject a validator from the current, next, and subsequent committees
+    /// @dev Intended for sparing use; only reverts if burning results in empty committee
+    function _ejectFromCommittees(address validatorAddress, uint256 numEligible) internal {
+        uint32 current = currentEpoch;
+        uint8 currentEpochPointer = epochPointer;
+        address[] storage currentCommittee = _getRecentEpochInfo(current, current, currentEpochPointer).committee;
+        bool ejected = _eject(currentCommittee, validatorAddress);
+        uint256 committeeSize = currentCommittee.length;
+        _checkCommitteeSize(numEligible, committeeSize);
+
+        uint32 nextEpoch = current + 1;
+        address[] storage nextCommittee = _getFutureEpochInfo(nextEpoch, current, currentEpochPointer).committee;
+        ejected = _eject(nextCommittee, validatorAddress);
+        committeeSize = nextCommittee.length;
+        _checkCommitteeSize(numEligible, committeeSize);
+
+        uint32 subsequentEpoch = current + 2;
+        address[] storage subsequentCommittee =
+        _getFutureEpochInfo(subsequentEpoch, current, currentEpochPointer).committee;
+        ejected = _eject(subsequentCommittee, validatorAddress);
+        committeeSize = subsequentCommittee.length;
+        _checkCommitteeSize(numEligible, committeeSize);
+
+        // only decrement the nextCommitteeSize if the number of eligible validators drops below
+        if (nextCommitteeSize > numEligible) {
+            uint16 oldSize = nextCommitteeSize;
+            nextCommitteeSize = uint16(numEligible);
+            emit NextCommitteeSizeUpdated(oldSize, nextCommitteeSize, numEligible);
+        }
+    }
+
+    function _eject(address[] storage committee, address validatorAddress) internal returns (bool) {
+        uint256 len = committee.length;
+        for (uint256 i; i < len; ++i) {
+            if (committee[i] == validatorAddress) {
+                committee[i] = committee[len - 1];
+                committee.pop();
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// @dev Invoked either as part of a governance-initiated burn or a validator's final slash to 0
+    /// @notice Burns or final slashes confiscate the validator's remaining stake held by this contract
+    /// by sending it to the Issuance contract to be repurposed for future reward distribution
+    function _consensusBurn(address validatorAddress) internal {
+        ValidatorInfo storage validator = validators[validatorAddress];
+        ValidatorStatus status = validator.currentStatus;
+        // reverts if decremented committee size after ejection reaches 0, preventing network halt
+        uint256 numEligible = _getValidators(ValidatorStatus.Active).length;
+        // if validator being ejected is committee-eligible, ejection will decrement `numEligible`
+        if (_eligibleForCommitteeNextEpoch(status)) {
+            numEligible = numEligible - 1;
+        }
+        _ejectFromCommittees(validatorAddress, numEligible);
+
+        // settle ledgers
+        (uint256 outstandingBalance, uint256 initialStakeAmt,) = getBalanceBreakdown(validatorAddress);
+        // rewards are already held on Issuance contract, so wiping registry's balance ledger effectively confiscates
+        // them
+        balances[validatorAddress] = 0;
+        // confiscate outstanding stake balance by consolidating it on the Issuance contract
+        uint256 confiscatedStake = outstandingBalance < initialStakeAmt ? outstandingBalance : initialStakeAmt;
+        (bool r,) = issuance.call{ value: confiscatedStake }("");
+        require(r, "Impossible condition");
+
+        // exit, retire, and unstake + burn validator immediately
+        _exit(validator, currentEpoch);
+        _retire(validator);
+        address recipient = _getRecipient(validatorAddress);
+        _unstake(validatorAddress, recipient);
+    }
+
+    /// @dev Stores the number of blocks finalized in previous epoch and the voter committee for the new epoch
+    function _updateEpochInfo(address[] memory futureCommittee)
+        internal
+        returns (uint32, uint256, uint32, address[] memory)
+    {
+        // cache epoch ring buffer's pointers in memory
+        uint8 prevEpochPointer = epochPointer;
+        uint8 newEpochPointer = (prevEpochPointer + 1) % 4;
+
+        // update new current epoch info
+        epochPointer = newEpochPointer;
+        uint32 newEpoch = ++currentEpoch;
+        address[] storage newCommittee = futureEpochInfo[newEpochPointer].committee;
+        StakeConfig memory newStakeConfig = getCurrentStakeConfig();
+        epochInfo[newEpochPointer] = EpochInfo(
+            newCommittee,
+            newStakeConfig.epochIssuance,
+            uint64(block.number) + 1,
+            newEpoch,
+            newStakeConfig.epochDuration,
+            stakeVersion
+        );
+
+        // update future epoch info
+        uint8 twoEpochsInFuturePointer = (newEpochPointer + 2) % 4;
+        futureEpochInfo[twoEpochsInFuturePointer].committee = futureCommittee;
+        futureEpochInfo[twoEpochsInFuturePointer].epochId = newEpoch + 2;
+
+        return (newEpoch, newStakeConfig.epochIssuance, newStakeConfig.epochDuration, newCommittee);
+    }
+
+    /// @dev Fetch info for a future epoch; two epochs into future are stored
+    /// @notice Block height is not known for future epochs, so it will be 0
+    function _getFutureEpochInfo(
+        uint32 future,
+        uint32 current,
+        uint8 currentPointer
+    )
+        internal
+        view
+        returns (EpochInfo storage)
+    {
+        uint8 futurePointer = (uint8(future - current) + currentPointer) % 4;
+        EpochInfo storage info = futureEpochInfo[futurePointer];
+        if (info.epochId != future) revert InvalidEpoch(future);
+
+        return info;
+    }
+
+    /// @dev Fetch info for a current or past epoch; four latest are stored (current and three in past)
+    function _getRecentEpochInfo(
+        uint32 recent,
+        uint32 current,
+        uint8 currentPointer
+    )
+        internal
+        view
+        returns (EpochInfo storage)
+    {
+        // identify diff from pointer
+        uint8 pointerDiff = uint8(current - recent);
+        // prevent underflow by adding 4 (will be modulo'd away)
+        uint8 pointer = (4 + currentPointer - pointerDiff) % 4;
+
+        EpochInfo storage info = epochInfo[pointer];
+        if (info.epochId != recent) revert InvalidEpoch(recent);
+
+        return info;
+    }
+
+    function _enforceSorting(address[] calldata futureCommittee) internal pure {
+        for (uint256 i; i < futureCommittee.length - 1; ++i) {
+            if (futureCommittee[i] >= futureCommittee[i + 1]) revert CommitteeRequirement(futureCommittee[i]);
+        }
+    }
+
+    /// @dev Checks current committee size against total eligible for committee service in next epoch
+    /// @notice Prevents the network from reaching invalid committee state
+    function _checkCommitteeSize(uint256 activeOrPending, uint256 committeeSize) internal pure {
+        if (activeOrPending == 0 || committeeSize == 0 || committeeSize > activeOrPending) {
+            revert InvalidCommitteeSize(activeOrPending, committeeSize);
+        }
+    }
+
+    /// @dev Reverts if the provided validator's status doesn't match the provided `requiredStatus`
+    function _checkValidatorStatus(address validatorAddress, ValidatorStatus requiredStatus) private view {
+        ValidatorStatus status = validators[validatorAddress].currentStatus;
+        if (status != requiredStatus) revert InvalidStatus(status);
+    }
+
+    /// @dev Returns whether given `validatorAddress` is a member of the given committee
+    function _isCommitteeMember(
+        address validatorAddress,
+        address[] memory committee
+    )
+        internal
+        pure
+        returns (bool)
+    {
+        // cache len to memory
+        uint256 committeeLen = committee.length;
+        for (uint256 i; i < committeeLen; ++i) {
+            // terminate if `validatorAddress` is a member of committee
+            if (committee[i] == validatorAddress) return true;
+        }
+
+        return false;
+    }
+
+    /// @dev Active and pending activation/exit validators are eligible for committee service in next epoch
+    function _eligibleForCommitteeNextEpoch(ValidatorStatus status) internal pure returns (bool) {
+        return (status == ValidatorStatus.Active || status == ValidatorStatus.PendingExit
+                || status == ValidatorStatus.PendingActivation);
+    }
+
+    /// @dev Returns true for `Staked` or `Exited` validators that have elapsed one full epoch since exit
+    function _eligibleForUnstake(ValidatorInfo storage validator) internal view returns (bool) {
+        ValidatorStatus status = validator.currentStatus;
+        if (status == ValidatorStatus.Staked) return true;
+
+        uint32 eligibleEpoch = validator.exitEpoch + 1;
+        if (status == ValidatorStatus.Exited && currentEpoch >= eligibleEpoch) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// @notice `Active` queries also include validators pending activation or exit
+    /// Because they are eligible for voter committee service in the next epoch
+    /// @dev There are ~1000 total MNOs in the world so `SLOAD` loops should not run out of gas
+    /// @dev Room for storage optimization (SSTORE2 etc) to hold more validators
+    function _getValidators(ValidatorStatus status) internal view returns (ValidatorInfo[] memory) {
+        ValidatorInfo[] memory validatorsMatched = new ValidatorInfo[]((totalSupply()));
+        uint256 numMatches;
+
+        for (uint256 i; i < validatorsMatched.length; ++i) {
+            address validatorAddress = _getAddress(tokenByIndex(i));
+            ValidatorInfo storage current = validators[validatorAddress];
+            if (current.isRetired) continue;
+
+            // queries for `Any` status include all unretired validators
+            bool matchFound = status == ValidatorStatus.Any;
+            if (!matchFound) {
+                // mem cache to save SLOADs
+                ValidatorStatus currentStatus = current.currentStatus;
+
+                // include pending activation/exit due to committee service eligibility in next epoch
+                if (status == ValidatorStatus.Active) {
+                    matchFound = _eligibleForCommitteeNextEpoch(currentStatus);
+                } else {
+                    // all other queries return only exact matches
+                    matchFound = currentStatus == status;
+                }
+            }
+
+            if (matchFound) {
+                validatorsMatched[numMatches++] = current;
+            }
+        }
+
+        // trim and return array
+        assembly {
+            mstore(validatorsMatched, numMatches)
+        }
+
+        return validatorsMatched;
+    }
+
+    /**
+     *
+     *   pausability
+     *
+     */
+
+    /// @dev Emergency function to pause validator and stake management
+    /// @notice Does not pause system callable or ConsensusNFT fns. Only accessible by `owner`
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    /// @dev Emergency function to unpause validator and stake management
+    /// @notice Does not affect system callable or ConsensusNFT fns. Only accessible by `owner`
+    function unpause() external onlyOwner {
+        _unpause();
+    }
+
+    /**
+     *
+     *   configuration
+     *
+     */
+
+    /// @param initialValidators_ The initial validator set running Telcoin Network; these validators will
+    /// comprise the voter committee for the first three epochs, ie `epochInfo[0:2]`
+    /// @dev Stake for `initialValidators_` is allocated directly to the ConsensusRegistry balance and
+    /// decremented directly from InterchainTEL within the protocol on the rust side
+    /// @dev Only governance delegation is enabled at genesis
+    constructor(
+        StakeConfig memory genesisConfig_,
+        ValidatorInfo[] memory initialValidators_,
+        BlsG1.ProofOfPossession[] memory proofsOfPossession,
+        address owner_
+    )
+        Ownable(owner_)
+        StakeManager("ConsensusNFT", "CNFT")
+    {
+        if (initialValidators_.length == 0 || initialValidators_.length != proofsOfPossession.length) {
+            revert GenesisArityMismatch();
+        }
+
+        // set stake storage configs
+        versions[0] = genesisConfig_;
+
+        // set nextCommitteeSize based on current committee
+        // NOTE: committees are expected to always be < 100
+        nextCommitteeSize = uint16(initialValidators_.length);
+
+        // set first three epochs with genesis config
+        for (uint256 j; j <= 2; ++j) {
+            EpochInfo storage epoch = epochInfo[j];
+            epoch.epochId = uint32(j);
+            epoch.epochDuration = genesisConfig_.epochDuration;
+            epoch.epochIssuance = genesisConfig_.epochIssuance;
+
+            EpochInfo storage futureEpoch = futureEpochInfo[j];
+            futureEpoch.epochId = uint32(j);
+            futureEpoch.epochDuration = genesisConfig_.epochDuration;
+            futureEpoch.epochIssuance = genesisConfig_.epochIssuance;
+        }
+
+        // set initial validators
+        for (uint256 i; i < initialValidators_.length; ++i) {
+            ValidatorInfo memory currentValidator = initialValidators_[i];
+            bytes32 blsPubkeyHash = _verifyProofOfPossession(
+                proofsOfPossession[i], currentValidator.validatorAddress, currentValidator.blsPubkey
+            );
+
+            // assert `validatorIndex` struct members match expected value
+            if (currentValidator.validatorAddress == address(0x0)) {
+                revert InvalidValidatorAddress();
+            }
+            if (currentValidator.activationEpoch != uint32(0)) {
+                revert InvalidEpoch(currentValidator.activationEpoch);
+            }
+            if (currentValidator.exitEpoch != uint32(0)) {
+                revert InvalidEpoch(currentValidator.exitEpoch);
+            }
+            if (currentValidator.currentStatus != ValidatorStatus.Active) {
+                revert InvalidStatus(currentValidator.currentStatus);
+            }
+            if (currentValidator.isRetired != false) {
+                revert InvalidStatus(ValidatorStatus.Exited);
+            }
+            if (currentValidator.isDelegated == true) {
+                // at genesis, only governance delegations are enabled
+                delegations[currentValidator.validatorAddress] =
+                    Delegation(blsPubkeyHash, currentValidator.validatorAddress, owner_, uint8(0), uint64(1));
+            }
+            if (currentValidator.stakeVersion != 0) {
+                revert InvalidStakeAmount(currentValidator.stakeVersion);
+            }
+
+            // first three epochs use initial validators as committee
+            for (uint256 j; j <= 2; ++j) {
+                epochInfo[j].committee.push(currentValidator.validatorAddress);
+                futureEpochInfo[j].committee.push(currentValidator.validatorAddress);
+            }
+
+            validators[currentValidator.validatorAddress] = currentValidator;
+            balances[currentValidator.validatorAddress] = genesisConfig_.stakeAmount;
+            blsPubkeyHashToValidator[blsPubkeyHash] = currentValidator.validatorAddress;
+            _mint(currentValidator.validatorAddress, _getTokenId(currentValidator.validatorAddress));
+
+            emit ValidatorActivated(currentValidator);
+        }
+    }
+
+    /// @inheritdoc IStakeManager
+    function upgradeStakeVersion(StakeConfig calldata newConfig)
+        external
+        override
+        onlyOwner
+        whenNotPaused
+        returns (uint8)
+    {
+        if (newConfig.epochDuration == 0) revert InvalidDuration(newConfig.epochDuration);
+
+        uint8 newVersion = ++stakeVersion;
+        versions[newVersion] = newConfig;
+
+        return newVersion;
+    }
+}

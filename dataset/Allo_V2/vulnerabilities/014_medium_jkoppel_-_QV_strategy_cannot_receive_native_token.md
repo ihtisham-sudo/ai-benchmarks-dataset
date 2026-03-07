@@ -1,0 +1,42 @@
+# jkoppel - QV strategy cannot receive native token
+
+**Severity:** medium
+**Auditor:** Sherlock
+**Protocol:** Allo V2
+**Keywords:** cybersecurity, vulnerability, native token, receive method, funding strategies, RFP strategy, DonationMerkle strategy, QV strategy, incompatibility, impact analysis, code snippet, SafeTransferLib, transfer amount, manual review, smart contracts, blockchain, decentralized finance, call function, gas limit, recommendation
+
+---
+
+jkoppel
+
+medium
+
+# QV strategy cannot receive native token
+
+The RFP and DonationMerkle strategies have a receive() method so that they can be funded with native token.  The QV strategy does not, and therefore it is incompatible with the native token.
+
+## Vulnerability Detail
+
+See summary
+
+## Impact
+
+Cannot use QV strategy with native token.
+
+## Code Snippet
+
+https://github.com/sherlock-audit/2023-09-Gitcoin/blob/main/allo-v2/contracts/strategies/qv-base/QVBaseStrategy.sol#L574
+
+Notice the lack of a receive() method, which is also lacking in QVSimpleStrategy.  In contrast, the others have it, e.g.: https://github.com/sherlock-audit/2023-09-Gitcoin/blob/main/allo-v2/contracts/strategies/rfp-simple/RFPSimpleStrategy.sol#L500 .
+
+Allo.fundPool calls _transferAmountFrom: https://github.com/sherlock-audit/2023-09-Gitcoin/blob/main/allo-v2/contracts/core/Allo.sol#L516 . Tracing the definitions, it invokes the strategy with \u0060call(gas(), to, amount, gas(), 0x00, gas(), 0x00)\u0060 (in SafeTransferLib). I.e.: it invokes it with empty calldata, and will therefore try to call receive() and  revert.
+
+
+## Tool used
+
+Manual Review
+
+## Recommendation
+
+
+Add a receive() method.

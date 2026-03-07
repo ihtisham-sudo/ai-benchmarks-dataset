@@ -1,0 +1,17 @@
+{
+  "name": "SuperFluid Finance ",
+  "rid": 102,
+  "score": 77,
+  "category": "AssetManagement",
+  "github_url": "https://github.com/superfluid-org/protocol-monorepo/tree/dev",
+  "total_audit_reports": 7,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 3,
+    "medium": 3,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "The main purpose of the application is to facilitate the creation and management of financial streams using the Superfluid Protocol. It provides developers with the tools to build smart contracts that leverage the Super Token standard for efficient money streaming. Users can quickly integrate Superfluid into their applications and learn how to create, update, and delete financial flows. Additionally, the application offers resources on Superfluid DAO governance and tokenomics, as well as a comprehensive reference for relevant contracts. Overall, it aims to empower developers to harness the capabilities of decentralized finance through streamlined processes."
+}

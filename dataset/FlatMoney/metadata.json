@@ -1,0 +1,17 @@
+{
+  "name": "FlatMoney",
+  "rid": 13,
+  "score": 83,
+  "category": "Perpetuals",
+  "github_url": "https://github.com/FlatMoney/flat-money-contracts-v1",
+  "total_audit_reports": 19,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 8,
+    "medium": 8,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 115,
+  "description": "Flat Money is a decentralized delta-neutral flatcoin protocol that allows users to deposit Rocket Pool ETH (rETH) to mint Flat Money (UNIT), designed to outpace inflation and preserve purchasing power. It offers leverage trading options through perpetual futures contracts, providing end-to-end rETH exposure. The protocol emphasizes the ETH Standard, viewing staked ETH as valuable collateral that appreciates with Ethereum' growth. Unlike traditional stablecoins, Flat Money is fully onchain, inflation-resistant, and avoids external financial risks. It aims to create a reliable financial alternative in an inflation-prone economy while maintaining capital efficiency and minimal exposure to other protocols."
+}

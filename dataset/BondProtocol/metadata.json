@@ -1,0 +1,17 @@
+{
+  "name": "BondProtocol",
+  "rid": 62,
+  "score": 79,
+  "category": "CrosschainLiquidity",
+  "github_url": "https://github.com/Bond-Protocol/bond-contracts",
+  "total_audit_reports": 20,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 10,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 29,
+  "description": "Bond Protocol, launched on October 3rd, 2022, aims to enhance sustainable treasury growth for crypto projects. Its product suite includes Permissionless Bonds and Options Liquidity Mining, available on Ethereum, Arbitrum, and Optimism. The protocol addresses inefficiencies in the crypto industry, particularly the challenges projects face in diversifying their treasury and managing token supply. By providing alternatives to traditional distribution mechanisms, Bond Protocol seeks to reduce slippage, price impact, and incentive misalignment. This innovation helps projects extend their runway and improve treasury management."
+}

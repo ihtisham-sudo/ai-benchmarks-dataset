@@ -1,0 +1,48 @@
+# some protected external non-view functions does not have sphereXGuardExternal() modifier
+
+**Severity:** low/info
+**Auditor:** Code4rena
+**Protocol:** Wildcat V2
+**Keywords:** cybersecurity, vulnerability, sphereXGuardExternal, modifier, external functions, non-view functions, oversight, security checks, transaction monitoring, function execution, impact, proof of concept, manual review, mitigation steps, protection, code review, software security, function validation, best practices, security oversight
+
+---
+
+# Lines of code
+
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L201
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L275
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L491
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L518
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L594
+
+
+# Vulnerability details
+
+The  \u0060sphereXGuardExternal()\u0060 modifier is to be  incorporated in all external protected non-view functions as stated in the [comments](https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/spherex/SphereXProtectedRegisteredBase.sol#L281) , 
+
+However due to an oversight , some protected external non-view functions does not have the modifier incorporated 
+## Impact
+
+The \u0060_sphereXValidateExternalPre()\u0060 function would not be called before the function execution,  bypassing  security checks or transaction monitoring.
+
+## Proof of Concept
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L201
+
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L275
+
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L491
+
+
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L518
+
+https://github.com/code-423n4/2024-08-wildcat/blob/fe746cc0fbedc4447a981a50e6ba4c95f98b9fe1/src/HooksFactory.sol#L594
+## Tools Used
+Manual Review
+
+## Recommended Mitigation Steps
+Ensure that all protected external non-view functions incorporates the \u0060sphereXGuardExternal()\u0060 modifier  
+
+
+## Assessed type
+
+Other

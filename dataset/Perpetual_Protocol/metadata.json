@@ -1,0 +1,17 @@
+{
+  "name": "Perpetual Protocol",
+  "rid": 83,
+  "score": 75,
+  "category": "Perpetuals",
+  "github_url": "https://github.com/perpetual-protocol/perpetual-protocol",
+  "total_audit_reports": 14,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 12,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 65,
+  "description": "The main purpose of the application is to serve as an on-chain perpetual futures decentralized exchange (DEX) that offers deep liquidity and composability for builders. It utilizes open source vAMM technology to enable instant trading without the need for signups, intermediaries, or custodians, ensuring users maintain full control over their funds. The platform provides a world-class trading experience that is both permissionless and secure, leveraging public blockchains and the L2 scaling solution Optimism for enhanced performance. Users can trade or provide liquidity with up to 10x leverage across a diverse range of large-cap and long-tail crypto assets, benefiting from fast transactions and minimal fees secured by Ethereum' Layer 1."
+}

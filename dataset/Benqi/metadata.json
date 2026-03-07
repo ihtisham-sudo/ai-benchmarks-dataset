@@ -1,0 +1,17 @@
+{
+  "name": "Benqi ",
+  "rid": 155,
+  "score": 93,
+  "category": "LiquidStaking",
+  "github_url": "https://github.com/Benqi-fi/BENQI-Smart-Contracts",
+  "total_audit_reports": 19,
+  "vulnerability_source": "solodit",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 51,
+  "description": "BENQI is a leading DeFi application on the Avalanche network that offers a suite of protocols for staking, lending, and validator deployment. Its core products include liquid staking with sAVAX, which allows users to stake AVAX while maintaining liquidity, and lending/borrowing services that facilitate interest earnings on digital assets. The platform features two primary markets: Core Markets for highly liquid assets and Avalanche Ecosystem Markets for a wider range of assets, ensuring specialized risk management. Additionally, BENQI provides Ignite, a solution for easily launching Avalanche validators with minimal upfront costs, catering to both short-term and long-term use cases."
+}

@@ -1,0 +1,10 @@
+# Issue#497 - Add parameter to lender accept bid for Max Market Fee
+
+**Severity:** high
+**Auditor:** Sherlock
+**Protocol:** Teller Finance
+**Keywords:** vulnerability, marketplace fee, borrower, malicious, market owner, front-running, lender, bid, timelock, setMarketFeePercent, setProtocolFee, manual review, code review, audit, fix, protocol, comments, recommendation, impact, security
+
+---
+
+IssueM-10: Issue#497\u0027Addparameter tolenderaccept bidforMaxMarketFee\u0027frompreviousauditisstillpresent Source: https: //github.com/sherlock-audit/2024-04-teller-finance-judging/issues/125 Foundby 0x3b,0x73696d616f, 0xDjango, EgisSecurity, pkqs90, samuraii77 Summary Issue#497 fromthe previousSherlock auditwas not fixed in the current code and is still present. VulnerabilityDetail The vulnerability iswell explain in thementionedl link above, essentially anymarket ownermay change themarketplace feewhile frontrunning a borrower and getting more funds in return. APRwith the fixwasmentioned in the comments but itwas nevermerged. Fromthe docs, the issue is valid as long as there is not a won\u0027t fix label. Impact Borrower paysmoremarketplace fees than expected due tomaliciousmarket owner. CodeSnippet TellerV2: : lenderAcceptBid () function lenderAcceptBid (uint256 _bidId) ... { ... amountToMarketplace = bid.loanDetails.principal.percent ( marketRegistry.getMarketplaceFee (bid.marketplaceId) ... } 88    Toolused ManualReview Vscode Recommendation The recommendation fromissue#497 are good: Add a timelock delay for setMarketFeePercent/setProtocolFee allow lenders to specify the exact fees theywere expecting as a parameter to lenderAcceptBid Discussion nevillehuang Attaching LSWcomments for consideration: invalid, it is fixedwithin themarket contract,where there\u0027s amax fee paramthatmarkets can set. here Can\u0027t seemto find logic relating to above and don\u0027t see it as per sherlock-admin2 The protocol teamfixed this issue in the following PRs/commits: https: //github.com/teller-protocol/teller-protocol-v2-audit-2024/pull/38/files sherlock-admin2 The LeadSeniorWatson signed off on the fix. 89    

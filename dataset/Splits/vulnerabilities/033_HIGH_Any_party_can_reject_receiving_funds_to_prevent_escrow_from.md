@@ -1,0 +1,22 @@
+# Any party can reject receiving funds to prevent escrow from settling/claiming
+
+**Severity:** HIGH
+**Auditor:** AuditOne
+
+---
+
+**Description:** 
+
+Since the system adopts ""Push""pattern to handle funds transferring when settling, if any transfer is failed then the escrow cannot be settled. Any party (buyer,seller,marketplace) can abused this,reject receiving funds (native token or ERC777)and prevent escrow from settling.
+
+1. There was a dispute on escrow for which arbitrator was deciding the split
+2. Arbitrator makes below split -> Buyer 80%,Seller 10%,Others 10%
+3. Seller is unhappy with Arbitrator decision
+4. Once Arbitrator initiates the claim based on his decided split,sendEscrowShare function is called to send each party share
+5. Once sendEscrowShare function tries to send split to Seller (who is contract),Seller simply reverts the payment causing success to be false and whole claim to fail
+
+**Recommendations:** 
+
+Consider following Pull over Push pattern when dealing with settling escrow. Do not fail the claim function if party is trying to dos the receive payment. You may store these funds amount in a mapping variable and users can use another function to extract the failed payment using this mapping
+
+**Status:** Resolved

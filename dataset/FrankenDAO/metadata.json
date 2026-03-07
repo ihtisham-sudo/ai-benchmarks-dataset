@@ -1,0 +1,17 @@
+{
+  "name": "FrankenDAO",
+  "rid": 133,
+  "score": 59,
+  "category": "DAO",
+  "github_url": "https://github.com/NewfundametalsDAO/FrankenDAO",
+  "total_audit_reports": 16,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 5,
+    "medium": 11,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 14,
+  "description": "The main purpose of the Franken DAO is to create a decentralized governance structure for the Punksville Ecosystem, focusing on community contribution and transparency. The project emerged in response to the prevalent issues of cash grabs and rug pulls in the NFT space, aiming to provide a better alternative for NFT management. After a successful mint, the community was engaged in managing a treasury and governing resources collectively, which resonated with many collectors. Despite distractions, including a halted play-to-earn game initiative, the project refocused on its original vision of decentralization and empowering holders to collaboratively run the project."
+}

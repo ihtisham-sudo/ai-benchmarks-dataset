@@ -1,0 +1,111 @@
+# \u0060FixedTermLoanHooks\u0060 allow Borrower to update Annual Interest before end of the "Fixed Term Period"
+
+**Severity:** medium
+**Auditor:** Code4rena
+**Protocol:** Wildcat V2
+**Keywords:** cybersecurity, vulnerability, APR, FixedTermLoanHooks, Wildcat markets, reserve ratio, lender funds, borrower, rug pull, market exit, fixed term, annual interest, withdrawals, manual review, test case, mitigation steps, block timestamp, invalid validation, smart contracts, financial security
+
+---
+
+# Lines of code
+
+https://github.com/code-423n4/2024-08-wildcat/blob/main/src/access/FixedTermLoanHooks.sol#L857-L859
+https://github.com/code-423n4/2024-08-wildcat/blob/main/src/access/FixedTermLoanHooks.sol#L960-L978
+
+
+# Vulnerability details
+
+## Summary
+While the documentation states that in case of \u0027fixed term\u0027 market the APR cannot be changed until the term ends, nothing prevents this in \u0060FixedTermLoanHooks\u0060.
+
+## Vulnerability details
+In Wildcat markets, lenders know in advance how much \u0060APR\u0060 the borrower will pay them. In order to allow lenders to exit the market swiftly, the market must always have at least a \u0060reserve ratio\u0060 of the lender funds ready to be withdrawn.
+If the borrower decide to [reduce the \u0060APR\u0060](https://docs.wildcat.finance/using-wildcat/day-to-day-usage/borrowers#reducing-apr), in order to allow lenders to \u0027ragequit\u0027, a new \u0060reserve ratio\u0060 is calculated based on the variation of the APR as described in the link above.
+Finally, is a market implement a fixed term (date until when withdrawals are not possible), it shouldn\u0027t be able to reduce the APR, as this would allow the borrower to \u0027rug\u0027 the lenders by reducing the APR to 0% while they couldn\u0027t do anything against that.
+
+The issue here is that while lenders are (as expected) prevented to withdraw before end of term:
+https://github.com/code-423n4/2024-08-wildcat/blob/main/src/access/FixedTermLoanHooks.sol#L857-L859
+\u0060\u0060\u0060solidity
+File: src/access/FixedTermLoanHooks.sol
+848:   function onQueueWithdrawal(
+849:     address lender,
+850:     uint32 /* expiry */,
+851:     uint /* scaledAmount */,
+852:     MarketState calldata /* state */,
+853:     bytes calldata hooksData
+854:   ) external override {
+855:     HookedMarket memory market = _hookedMarkets[msg.sender];
+856:     if (!market.isHooked) revert NotHookedMarket();
+857:     if (market.fixedTermEndTime > block.timestamp) {
+858:       revert WithdrawBeforeTermEnd();
+859:     }
+\u0060\u0060\u0060
+
+this is not the case for the borrower setting the annual interest:
+https://github.com/code-423n4/2024-08-wildcat/blob/main/src/access/FixedTermLoanHooks.sol#L960-L978
+\u0060\u0060\u0060solidity
+File: src/access/FixedTermLoanHooks.sol
+960:   function onSetAnnualInterestAndReserveRatioBips(
+961:     uint16 annualInterestBips,
+962:     uint16 reserveRatioBips,
+963:     MarketState calldata intermediateState,
+964:     bytes calldata hooksData
+965:   )
+966:     public
+967:     virtual
+968:     override
+969:     returns (uint16 updatedAnnualInterestBips, uint16 updatedReserveRatioBips)
+970:   {
+971:     return
+972:       super.onSetAnnualInterestAndReserveRatioBips(
+973:         annualInterestBips,
+974:         reserveRatioBips,
+975:         intermediateState,
+976:         hooksData
+977:       );
+978:   }
+979: 
+\u0060\u0060\u0060
+
+## Impact
+Borrower can rug the lenders by reducing the APR while they cannot quit the market
+
+## Proof of Concept
+
+Add this test to \u0060test/access/FixedTermLoanHooks.t.sol\u0060
+
+\u0060\u0060\u0060
+  function testAudit_SetAnnualInterestBeforeTermEnd() external {
+    DeployMarketInputs memory inputs;
+
+	// "deploying" a market with MockFixedTermLoanHooks
+	inputs.hooks = EmptyHooksConfig.setHooksAddress(address(hooks));
+	hooks.onCreateMarket(
+		address(this),				// deployer
+		address(1),				// dummy market address
+		inputs,					// ...
+		abi.encode(block.timestamp + 365 days, 0) // fixedTermEndTime: 1 year, minimumDeposit: 0
+	);
+
+	vm.prank(address(1));
+	MarketState memory state;
+	// as the fixedTermEndTime isn\u0027t past yet, it\u0027s not possible to withdraw
+	vm.expectRevert(FixedTermLoanHooks.WithdrawBeforeTermEnd.selector);
+	hooks.onQueueWithdrawal(address(1), 0, 1, state, \u0027\u0027);
+
+	// but it is still possible to reduce the APR to zero
+	hooks.onSetAnnualInterestAndReserveRatioBips(0, 0, state, "");
+  }
+\u0060\u0060\u0060
+
+## Tools Used
+Manual review
+
+## Recommended Mitigation Steps
+
+When \u0060FixedTermLoanHooks::onSetAnnualInterestAndReserveRatioBips\u0060 is called, revert if \u0060market.fixedTermEndTime > block.timestamp\u0060
+
+
+## Assessed type
+
+Invalid Validation

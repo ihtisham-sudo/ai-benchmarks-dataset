@@ -1,0 +1,17 @@
+{
+  "name": "Plaza Finance",
+  "rid": 93,
+  "score": 83,
+  "category": "Perpetuals",
+  "github_url": "https://github.com/Convexity-Research/plaza-contracts",
+  "total_audit_reports": 49,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 10,
+    "medium": 16,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Plaza is a DeFi application designed for on-chain bonds and leverage on the Base platform. It operates through a set of Solidity smart contracts and offers two main products: bondETH and levETH, which are programmable derivatives of ETH liquid staking derivatives (LSTs) and liquid restaking derivatives (LRTs). Users can deposit assets like wstETH to receive these ERC20 tokens, which can be used across various protocols such as DEXes and lending markets. The application functions in a permissionless manner, allowing anyone to execute its core functions, and includes user functionalities such as creations, redemptions, and coupon claiming, along with mechanisms like merchant auctions and distributions. Additionally, it relies on Chainlink Price Feeds to determine asset values during the creation and redemption of derivatives."
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Eggs Finance",
+  "rid": 184,
+  "score": 72,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/toshimon-io/eggs/tree/main/src",
+  "total_audit_reports": 10,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 5,
+    "medium": 3,
+    "low": 1,
+    "other": 1
+  },
+  "solidity_files": 0,
+  "description": "Eggs Finance is a DeFi application aimed at helping Sonic token ($S) holders enhance their returns through a unique up-only token mechanism. The protocol leverages the $EGGS token' distinctive features, including burning mechanisms and specific fee models, to ensure that the backing ratio of $S per $EGGS consistently increases. This design guarantees that the value of $EGGS, when measured in $S, can only rise over time. Users are encouraged to consult the provided documentation for guidance on effectively utilizing the Eggs Finance protocol."
+}

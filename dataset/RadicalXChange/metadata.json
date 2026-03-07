@@ -1,0 +1,17 @@
+{
+  "name": "RadicalXChange",
+  "rid": 114,
+  "score": 71,
+  "category": "NFTMarketplace",
+  "github_url": "https://github.com/RadicalxChange/pco-art/tree/main",
+  "total_audit_reports": 3,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 2,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "The main purpose of the Partial Common Ownership of Art (PCOArt) application is to facilitate shared ownership and value distribution among artists, communities, and art holders. This innovative system aims to enhance the relationships between the creators of art and those who appreciate it. PCOArt is initiated by RadicalxChange and the Future Art Ecosystems team at Serpentine Arts Technologies, showcasing a collaborative effort in the art community. The project also acknowledges contributions from various individuals and organizations, including advisory support from Will Holley and Lucy Sollitt, and collaboration with the Aerocene Foundation on its first non-blockchain initiative, Fairclouds. Interested parties are encouraged to reach out for more information or to contribute to the project."
+}

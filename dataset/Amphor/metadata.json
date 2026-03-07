@@ -1,0 +1,17 @@
+{
+  "name": "Amphor",
+  "rid": 95,
+  "score": 83,
+  "category": "YieldAggregator",
+  "github_url": "https://github.com/AmphorProtocol/synthetic-vault",
+  "total_audit_reports": 24,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 3,
+    "medium": 2,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 6,
+  "description": "Amphor is a yield aggregator designed for the decentralized finance (DeFi) ecosystem, providing users with easy access to competitive yield strategies. Launched initially on the Ethereum mainnet in October 2023, it transitioned to a public release in April 2024, emphasizing a \"set and forget\" approach for web3 users. The platform optimizes asset allocation across various DeFi protocols to maximize yield while adhering to DAO governance rules. Key features include the Boosted ETH Vault, which automatically rebalances wETH across multiple assets, and the Symbiotic LRT Vault, focused on maximizing rewards through restaking infrastructure. Amphor also prioritizes security, having undergone third-party audits, and operates under a decentralized governance model that allows community-driven decision-making."
+}

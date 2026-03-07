@@ -1,0 +1,226 @@
+# 31 - Staking Bonus Imbalance Risk
+
+**Severity:** medium
+**Auditor:** Sherlock
+**Protocol:** FrankenDAO
+**Keywords:** changeStakeTime, changeStakeAmount, locking bonus, voting imbalance, stakingSettings, stakeToken, bonus, locked, Smart Contract, Ethereum, Blockchain, Voting Power, Error, Bug, Audit, Fix, User Advantage, Staking, Governance, Function
+
+---
+
+# Discussion
+zobront  
+Fixed: [https://github.com/Solidity-Guild/FrankenDAO/pull/10](https://github.com/Solidity-Guild/FrankenDAO/pull/10)  
+jack-the-pug  
+Fix confirmed
+**Source:** [GitHub Issue #54](https://github.com/sherlock-audit/2022-11-frankendao-judging/issues/54)  
+**Found by:** WATCHPUG, hansfriese, rvierdiiev, 0x52, neumo, Trumpero, cccz, John  
+
+proposalsCreated will be increased in verifyProposal(), queue() should increase proposalsPassed.
+
+Based on the context, queue() should increase userCommunityScoreData[proposal.proposer].proposalsPassed and totalCommunityScoreData.proposalsPassed instead.
+
+Due to the presence of setProposalsCreatedMultiplier() and setProposalsPassedMultiplier(), the multiplier of both scores can be different. When that\u0027s the case, the proposer\u0027s voting power bonuses will be wrongly calculated because proposalsPassed is not correctly increased in queue().
+
+- [Governance.sol](https://github.com/sherlock-audit/2022-11-frankendao/blob/main/src/Governance.sol#L467-L495)
+- [Staking.sol](https://github.com/sherlock-audit/2022-11-frankendao/blob/main/src/Staking.sol#L592-L601)
+
+Manual Review
+
+Change to:
+\u0060\u0060\u0060solidity
+function queue(uint256 _proposalId) external {
+    // Succeeded means we\u0027re past the endTime, yes votes outweigh no votes,
+    // and quorum threshold is met
+\u0060\u0060\u0060
+\u0060\u0060\u0060solidity
+if(state(_proposalId) != ProposalState.Succeeded) revert InvalidStatus();
+Proposal storage proposal = proposals[_proposalId];
+// Set the ETA (time for execution) to the soonest time based on the
+✱✦  Executor\u0027s delay
+uint256 eta = block.timestamp + executor.DELAY();
+proposal.eta = eta.toUint32();
+// Queue separate transactions for each action in the proposal
+uint numTargets = proposal.targets.length;
+for (uint256 i = 0; i < numTargets; i++) {
+    executor.queueTransaction(proposal.targets[i], proposal.values[i],
+✱✦  proposal.signatures[i], proposal.calldatas[i], eta);
+}
+// If a proposal is queued, we are ready to award the community voting
+✱✦  power bonuses to the proposer
+++userCommunityScoreData[proposal.proposer].proposalsCreated;
+++userCommunityScoreData[proposal.proposer].proposalsPassed;
+// We don\u0027t need to check whether the proposer is accruing community
+✱✦  voting power because
+// they needed that voting power to propose, and once they have an Active
+✱✦  Proposal, their
+// tokens are locked from delegating and unstaking.
+++totalCommunityScoreData.proposalsCreated;
+++totalCommunityScoreData.proposalsPassed;
+// Remove the proposal from the Active Proposals array
+_removeFromActiveProposals(_proposalId);
+emit ProposalQueued(_proposalId, eta);
+\u0060\u0060\u0060
+
+**ZakkMan**  
+Fixed: [https://github.com/Solidity-Guild/FrankenDAO/pull/20](https://github.com/Solidity-Guild/FrankenDAO/pull/20)  
+
+**jack-the-pug**  
+Fix confirmed
+**Source:** [GitHub Issue #48](https://github.com/sherlock-audit/2022-11-frankendao-judging/issues/48)  
+**Found by:** ElKu  
+
+In Staking.sol, the getCommunityVotingPower function doesn\u0027t calculate the votes correctly due to precision loss.
+
+In getCommunityVotingPower function, the return statement is where the mistake lies in:
+\u0060\u0060\u0060solidity
+return
+    (votes * cpMultipliers.votes / PERCENT) +
+    (proposalsCreated * cpMultipliers.proposalsCreated / PERCENT) +
+    (proposalsPassed * cpMultipliers.proposalsPassed / PERCENT);
+\u0060\u0060\u0060
+Here, after each multiplication by the Multipliers, we immediately divide it by PERCENT. Every time we do a division, there is a certain amount of precision loss. And when it\u0027s done thrice, the loss just accumulates. So instead, the division by PERCENT should be done after all 3 terms are added together.
+
+Note that this loss is not there if the Multipliers are a multiple of PERCENT. But these values can be changed through governance later. So it\u0027s better to be careful assuming that they may not always be a multiple of PERCENT.
+
+The community voting power of the user is calculated wrongly.
+
+The getCommunityVotingPower function:
+\u0060\u0060\u0060solidity
+function getCommunityVotingPower(address _voter) public override view returns (uint) {
+    uint64 votes;
+    uint64 proposalsCreated;
+\u0060\u0060\u0060
+## Vulnerabilities
+
+\u0060\u0060\u0060solidity
+uint64 proposalsPassed;
+// We allow this function to be called with the max uint value to get the total
+// community voting power
+if (_voter == address(type(uint160).max)) {
+  (votes, proposalsCreated, proposalsPassed) =
+      governance.totalCommunityScoreData();
+} else {
+  // This is only the case if they are delegated or unstaked, both of which
+  // should zero out the result
+  if (tokenVotingPower[_voter] == 0) return 0;
+  (votes, proposalsCreated, proposalsPassed) =
+      governance.userCommunityScoreData(_voter);
+}
+CommunityPowerMultipliers memory cpMultipliers = communityPowerMultipliers;
+return
+  (votes * cpMultipliers.votes / PERCENT) +
+  (proposalsCreated * cpMultipliers.proposalsCreated / PERCENT) +
+  (proposalsPassed * cpMultipliers.proposalsPassed / PERCENT);
+\u0060\u0060\u0060
+
+### Tool used
+VSCode, Manual Analysis
+
+Do the division once after all terms are added together:
+\u0060\u0060\u0060solidity
+return
+  ( (votes * cpMultipliers.votes) +
+  (proposalsCreated * cpMultipliers.proposalsCreated) +
+  (proposalsPassed * cpMultipliers.proposalsPassed) ) / PERCENT;
+\u0060\u0060\u0060
+
+zobront
+This is a good suggestion but don\u0027t think it warrants a Medium. All these values are intended to be > 100. In the event that votes is lowered more, it will always be the case that proposalsCreated & proposalsPassed will be greater than 100, so combining them doesn\u0027t improve the accuracy.
+If the multipliers are not a multiple of 100, say for example 125, 150 and 175 or something like that, then the precision will be still lost. But as I myself mentioned in the report, if all the multipliers are a multiplier of 100, then these equations dont cause an issue. Otherwise we should do all the additions before doing the division. Even though the loss is still there it can be minimized by this step. I think it deserves a medium as this calculation controls many Governance functions.
+
+If the multipliers are not a multiple of 100, say for example 125, 150 and 175 or something like that, then the precision will be still lost. But as I myself mentioned in the report, if all the multipliers are a multiplier of 100, then these equations dont cause an issue. Otherwise we should do all the additions before doing the division. Even though the loss is still there it can be minimized by this step. I think it deserves a medium as this calculation controls many Governance functions.
+
+You\u0027ve created a valid escalation for 5 USDC! To remove the escalation from consideration: Delete your comment. To change the amount you\u0027ve staked on this escalation: Edit your comment (do not create a new comment). You may delete or edit your escalation comment anytime before the 48-hour escalation window closes. After that, the escalation becomes final.
+## I think this makes sense and I was wrong to dispute it.
+It\u0027s a change we would like to make and agree there\u0027s the potential for some values to be calculated incorrectly.
+
+This issue\u0027s escalations have been accepted!
+Contestants\u0027 payouts and scores will be updated according to the changes made on this issue.
+
+zobront  
+Fixed: [https://github.com/Solidity-Guild/FrankenDAO/pull/24](https://github.com/Solidity-Guild/FrankenDAO/pull/24)  
+jack-the-pug  
+Fix confirmed
+**Source:** [GitHub Issue](https://github.com/sherlock-audit/2022-11-frankendao-judging/issues/31)  
+**Found by:** 0x52  
+
+Staking#changeStakeTime and changeStakeAmount allow the locking bonus to be modified. Any change to this value will cause voting imbalance in the system. If changes result in a higher total bonus then existing stakers will be given a permanent advantage over new stakers. If the bonus is increased then existing stakers will be at a disadvantage because they will be locked and unable to realize the new staking bonus.
+
+\u0060\u0060\u0060solidity
+function _stakeToken(uint _tokenId, uint _unlockTime) internal returns (uint) {
+    if (_unlockTime > 0) {
+        unlockTime[_tokenId] = _unlockTime;
+        uint fullStakedTimeBonus = ((_unlockTime - block.timestamp) *
+        ✱✦  stakingSettings.maxStakeBonusAmount) / stakingSettings.maxStakeBonusTime;
+        stakedTimeBonus[_tokenId] = _tokenId < 10000 ? fullStakedTimeBonus :
+        ✱✦  fullStakedTimeBonus / 2;
+    }
+}
+\u0060\u0060\u0060
+When a token is staked their stakeTimeBonus is stored. This means that any changes to \u0060stakingSettings.maxStakeBonusAmount\u0060 or \u0060stakingSettings.maxStakeBonusTime\u0060 won\u0027t affect tokens that are already stored. Storing the value is essential to prevent changes to the values causing major damage to the voting, but it leads to other more subtle issues when it is changed that will put either existing or new stakers at a disadvantage.
+
+**Example:** User A stakes when \u0060maxStakeBonusAmount = 10\u0060 and stakes long enough to get the entire bonus. Now \u0060maxStakeBonusAmount\u0060 is changed to 20. User A is unable to unstake their token right away because it is locked. They are now at a disadvantage because other users can now stake and get a bonus of 20 while they are stuck with only a bonus of 10. Now \u0060maxStakeBonusAmount\u0060 is changed to 5. User A now has an advantage because other users can now only stake for a bonus of 5. If User A never unstakes then they will forever have that advantage over new users.
+Voting power becomes skewed for users when \u0060Staking#changeStakeTime\u0060 and \u0060changeStakeAmount\u0060 are used.
+
+[GitHub Link](https://github.com/sherlock-audit/2022-11-frankendao/blob/main/src/Staking.sol#L389-L415)
+
+Manual Review
+
+I recommend implementing a poke function that can be called by any user on any user. This function should loop through all tokens (or the tokens specified) and recalculate their voting power based on current multipliers, allowing all users to be normalized to prevent any abuse.
+
+**zobront**  
+This is the intended behavior. Staking windows will be relatively short (~1 month) and bonuses will change only by governance vote. We accept that there may be short periods where a user is locked in a suboptimal spot, but they can unstake and restake when the period is over.
+
+**0x00052**  
+Escalate for 1 USDC  
+I think this should be considered valid. It won\u0027t just be for a small amount of time if the staking amount is lowered. In this case, all users who staked beforehand will have a permanent advantage over other users. Due to the permanent imbalance lowering it would cause in the voting power of users, I think that medium is appropriate.
+
+**sherlock-admin**  
+Escalate for 1 USDC  
+I think this should be considered valid. It won\u0027t just be for a small amount of time if the staking amount is lowered. In this case, all users who staked beforehand will have a permanent advantage over other users. Due to the permanent imbalance lowering it would cause in the voting power of users, I think that medium is appropriate.
+You\u0027ve created a valid escalation for 1 USDC!  
+To remove the escalation from consideration: Delete your comment. To change the amount you\u0027ve staked on this escalation: Edit your comment (do not create a new comment).  
+You may delete or edit your escalation comment anytime before the 48-hour escalation window closes. After that, the escalation becomes final.
+## Comments
+
+**zobront**  
+I can see the argument here. We don\u0027t want to change it and believe it\u0027s fine as is, but it may be a valid Medium.
+
+**Evert0x**  
+Escalation accepted
+
+**sherlock-admin**  
+Escalation accepted
+
+This issue\u0027s escalations have been accepted!  
+Contestants\u0027 payouts and scores will be updated according to the changes made on this issue.
+**Source:** [GitHub Issue](https://github.com/sherlock-audit/2022-11-frankendao-judging/issues/25)  
+**Found by:** hansfriese, Trumpero, 0x52  
+
+Governance \u0060castVote\u0060 can be called by anyone, even users that don\u0027t have any votes. Since the voting refund is per address, an adversary could use a large number of addresses to vote with zero votes to drain the vault.
+
+\u0060\u0060\u0060solidity
+function _castVote(address _voter, uint256 _proposalId, uint8 _support) internal
+    returns (uint) {
+    // Only Active proposals can be voted on
+    if (state(_proposalId) != ProposalState.Active) revert InvalidStatus();
+    // Only valid values for _support are 0 (against), 1 (for), and 2 (abstain)
+    if (_support > 2) revert InvalidInput();
+    Proposal storage proposal = proposals[_proposalId];
+    // If the voter has already voted, revert
+    Receipt storage receipt = proposal.receipts[_voter];
+    if (receipt.hasVoted) revert AlreadyVoted();
+    // Calculate the number of votes a user is able to cast
+    // This takes into account delegation and community voting power
+    uint24 votes = (staking.getVotes(_voter)).toUint24();
+    // Update the proposal\u0027s total voting records based on the votes
+    if (_support == 0) {
+        proposal.againstVotes = proposal.againstVotes + votes;
+    } else if (_support == 1) {
+        proposal.forVotes = proposal.forVotes + votes;
+    } else if (_support == 2) {
+        proposal.abstainVotes = proposal.abstainVotes + votes;
+    }
+    // Update the user\u0027s receipt for this proposal
+}
+\u0060\u0060\u0060

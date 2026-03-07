@@ -1,0 +1,17 @@
+{
+  "name": "Splits",
+  "rid": 128,
+  "score": 86,
+  "category": "Currency",
+  "github_url": "https://github.com/0xSplits/splits-contracts",
+  "total_audit_reports": 9,
+  "vulnerability_source": "solodit",
+  "vulnerability_counts": {
+    "high": 162,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 5,
+  "description": "Splits is a DeFi application designed to manage onchain revenue through a set of open-source and audited smart contracts. It operates as a hyperstructure, ensuring that it runs for free and without the need for maintenance or trusted third parties. The application charges no protocol fees and runs exactly at gas, making it cost-effective for users. Teams and projects of all sizes utilize Splits to streamline their revenue management processes. For those unfamiliar with Ethereum or the technical aspects, a help center is available to assist users in understanding and using Splits effectively."
+}

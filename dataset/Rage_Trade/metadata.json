@@ -1,0 +1,17 @@
+{
+  "name": "Rage Trade",
+  "rid": 134,
+  "score": 93,
+  "category": "Perpetuals",
+  "github_url": "https://github.com/RageTrade/delta-neutral-gmx-vaults",
+  "total_audit_reports": 13,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 6,
+    "medium": 3,
+    "low": 1,
+    "other": 0
+  },
+  "solidity_files": 37,
+  "description": "Insufficient Information."
+}

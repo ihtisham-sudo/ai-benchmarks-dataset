@@ -1,0 +1,17 @@
+{
+  "name": "Tornado Cash",
+  "rid": 195,
+  "score": 74,
+  "category": "Services",
+  "github_url": "https://github.com/tornadocash/tornado-core/tree/master/contracts",
+  "total_audit_reports": 13,
+  "vulnerability_source": "solodit",
+  "vulnerability_counts": {
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 0,
+  "description": "Tornado Cash is a fully decentralized non-custodial protocol designed to facilitate private transactions in the cryptocurrency space. It operates on the Ethereum blockchain and utilizes smart contracts that are immutable, meaning they cannot be altered or shut down by anyone, including the original developers. Users maintain control over their funds through a non-custodial model, receiving private keys upon deposit, which enhances their asset security. The protocol enhances transaction privacy by severing the link between source and destination addresses, and it has expanded its functionality to include various tokens and support for multiple blockchains and side-chains. Additionally, Tornado Cash introduced Tornado Cash Nova, which allows for arbitrary amount transactions and shielded transfers, further enhancing user privacy and flexibility."
+}

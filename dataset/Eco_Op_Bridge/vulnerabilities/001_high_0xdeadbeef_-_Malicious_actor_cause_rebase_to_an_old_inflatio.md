@@ -1,0 +1,63 @@
+# 0xdeadbeef - Malicious actor cause rebase to an old inflation multiplier
+
+**Severity:** high
+**Auditor:** Sherlock
+**Protocol:** Eco Op Bridge 
+**Keywords:** cybersecurity, vulnerability, rebasing mechanism, inflation multiplier, permissionless, malicious actor, L1ECOBridge, L2ECOBridge, L2CrossDomainMessenger, rebase function, queue messages, rebase transactions, old value, debalance, L1, L2, profit, impact, manual review, recommendation
+
+---
+
+0xdeadbeef
+
+high
+
+# Malicious actor cause rebase to an old inflation multiplier
+
+## Summary
+
+The protocol has a rebasing mechanism that allows to sync the inflation multiplier between both L1 and L2 chains.
+The call to rebase is permissionless (anyone can trigger it).
+Insufficant checks allow a malicious actor to rebase to an old value.
+
+## Vulnerability Detail
+
+Rebasing from L1 to L2 is through the \u0060L1ECOBridge\u0060 rebase function. It collects the inflation multiplier from the ECO token and sends a message to \u0060L2ECOBridge\u0060 to update the L2 ECO token inflation multiplier.
+https://github.com/sherlock-audit/2023-05-ecoprotocol/blob/main/op-eco/contracts/bridge/L1ECOBridge.sol#L296
+\u0060\u0060\u0060solidity
+    function rebase(uint32 _l2Gas) external {
+        inflationMultiplier = IECO(l1Eco).getPastLinearInflation(
+            block.number
+        );
+
+        bytes memory message = abi.encodeWithSelector(
+            IL2ECOBridge.rebase.selector,
+            inflationMultiplier
+        );
+
+        sendCrossDomainMessage(l2TokenBridge, _l2Gas, message);
+    }
+\u0060\u0060\u0060
+
+A malicious actor can call this function a large amount of times to queue messages on \u0060L2CrossDomainMessenger\u0060.
+Since it is expensive to execute so much messages from \u0060L2CrossDomainMessenger\u0060 (especially if the malicious actor sets \u0060_l2Gas\u0060 to a high value) there will be a rebase message that will not be relayed through \u0060L2CrossDomainMessenger\u0060 (or in failedMessages array).
+
+Some time passes and other legitimate rebase transactions get executed.
+
+One day the malicious actor can execute one of his old rebase messages and set the value to the old value. The attacker will debalance the scales between L1 and L2 and can profit from it.
+
+## Impact
+
+debalance the scales between L1 and L2 ECO token
+
+## Code Snippet
+
+## Tool used
+
+Manual Review
+
+## Recommendation
+
+When sending a rebase from L1, include in the message the L1 block number. In L2 rebase, validate that the new rebase block number is above previous block number  
+
+
+

@@ -1,0 +1,17 @@
+{
+  "name": "Boost Protocol",
+  "rid": 12,
+  "score": 51,
+  "category": "Services",
+  "github_url": "https://github.com/boostxyz/boost-protocol",
+  "total_audit_reports": 9,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 6,
+    "medium": 3,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 80,
+  "description": "The main purpose of the Boost application is to serve as a distributed incentives network that allows wallets to deploy incentive offers for on-chain actions. Users can learn about the Boost ecosystem and how it operates, making it accessible for newcomers. The Boost App acts as the primary frontend client for discovering and receiving these incentive offers, catering to crypto users looking to earn rewards. Developers can utilize the Boost SDK and API to build on the Boost Protocol, while projects already supported can follow guides to deploy their own boosts. Additionally, rollups can integrate Boost by deploying Edge contracts and registering their networks within the ecosystem."
+}

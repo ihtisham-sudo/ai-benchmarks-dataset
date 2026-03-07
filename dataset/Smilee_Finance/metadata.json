@@ -1,0 +1,17 @@
+{
+  "name": "Smilee Finance",
+  "rid": 96,
+  "score": 83,
+  "category": "Options",
+  "github_url": "https://github.com/smilee-finance/gbera-contracts",
+  "total_audit_reports": 54,
+  "vulnerability_source": "scas",
+  "vulnerability_counts": {
+    "high": 2,
+    "medium": 9,
+    "low": 0,
+    "other": 0
+  },
+  "solidity_files": 22,
+  "description": "Smilee is a decentralized leverage protocol designed to create a variety of decentralized volatility products. Its innovative Liquidity-to-Volatility-Engine (LTVE) enables the development of these products, enhancing user engagement in DeFi markets. The protocol offers unparalleled asymmetric leverage and robust yield, allowing users to optimize their portfolios effectively. One of its key features, Impermanent Gain, allows users to decompose DEX-style liquidity positions, isolating impermanent loss risk and converting it into tradable options."
+}
