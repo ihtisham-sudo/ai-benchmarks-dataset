@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 27,
   "description": "The main purpose of the \u0192ayer protocol is to provide fungible liquidity to non-fungible token (NFT) collections, enhancing the trading experience for NFT collectors and liquidity providers. It utilizes Harberger Fees to ensure immediate liquidity across all rarities of a collection, allowing users to liquidate mid-tier and rare items effectively. The protocol features a Lockbox mechanism that enables users to access fungibility without relinquishing ownership of their NFTs, along with options for reservations and re-listing. Additionally, \u0192ayer integrates with Uniswap V4 to facilitate innovative NFT trading strategies, while rewarding liquidity providers with fees that extend beyond traditional swaps, thereby improving market efficiency."
 }

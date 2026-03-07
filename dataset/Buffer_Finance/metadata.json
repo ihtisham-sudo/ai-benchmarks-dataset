@@ -12,6 +12,6 @@
     "low": 1,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 10,
   "description": "Buffer is a decentralized price prediction market designed to facilitate trading in both crypto and non-crypto assets with timeframes as short as one minute. It supports various prediction market types, including Up/Down and Above/Below, and allows for extensive customization of market formats. The platform operates on a gasless, one-click trading system, ensuring a seamless user experience without the need for wallet approvals or gas fees. Additionally, Buffer offers non-custodial trading, meaning users retain full control over their assets without KYC requirements, and it utilizes reliable price feeds from the Pyth Network for fair trading."
 }

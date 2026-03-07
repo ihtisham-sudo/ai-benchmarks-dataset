@@ -5,6 +5,7 @@ Produces: code/ + vulnerabilities/ per protocol for AI benchmarking.
 """
 
 import os
+import re
 import sys
 import json
 import time
@@ -142,7 +143,19 @@ def fetch_solodit_findings(protocol_name):
     return all_findings
 
 
-def clone_github_repo(github_url, dest_dir):
+def parse_github_url(url):
+    """Extract base repo URL, branch, and subpath from GitHub URLs.
+    e.g. https://github.com/org/repo/tree/main/src/core
+      -> ('https://github.com/org/repo', 'main', 'src/core')
+    """
+    url = url.rstrip("/")
+    match = re.match(r'(https://github\.com/[^/]+/[^/]+)(?:/tree/([^/]+)(?:/(.+))?)?', url)
+    if match:
+        return match.group(1), match.group(2), match.group(3)
+    return url, None, None
+
+
+def clone_github_repo(github_url, dest_dir, branch=None):
     if not github_url:
         return False
 
@@ -152,36 +165,47 @@ def clone_github_repo(github_url, dest_dir):
     else:
         clone_url = github_url
 
+    cmd = ["git", "clone", "--depth", "1"]
+    if branch:
+        cmd += ["--branch", branch]
+    cmd += [clone_url, str(dest_dir)]
+
     try:
         result = subprocess.run(
-            ["git", "clone", "--depth", "1", clone_url, str(dest_dir)],
-            capture_output=True, text=True, timeout=120
+            cmd, capture_output=True, text=True, timeout=120
         )
+        if result.returncode != 0:
+            print(f"  [WARN] Git clone exit {result.returncode}: {result.stderr.strip()[:200]}")
+            return False
         git_dir = dest_dir / ".git"
         if git_dir.exists():
             shutil.rmtree(git_dir)
-        return (dest_dir).exists()
+        return dest_dir.exists()
     except Exception as e:
         print(f"  [WARN] Git clone failed: {e}")
         return False
 
 
-def extract_solidity_files(repo_dir, code_dir):
+def extract_solidity_files(repo_dir, code_dir, subpath=None):
     code_dir.mkdir(parents=True, exist_ok=True)
     count = 0
     skip_dirs = {"node_modules", "lib", "forge-std", ".git", "test", "tests", "script", "scripts"}
 
-    for sol_file in repo_dir.rglob("*.sol"):
+    search_root = repo_dir / subpath if subpath else repo_dir
+    if not search_root.exists():
+        search_root = repo_dir
+
+    for sol_file in search_root.rglob("*.sol"):
         if not sol_file.is_file():
             continue
-        parts = sol_file.relative_to(repo_dir).parts
+        parts = sol_file.relative_to(search_root).parts
         if any(p.lower() in skip_dirs for p in parts):
             continue
         if any(p.lower().startswith("mock") for p in parts):
             continue
 
         try:
-            rel_path = sol_file.relative_to(repo_dir)
+            rel_path = sol_file.relative_to(search_root)
             dest = code_dir / rel_path
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(sol_file, dest)
@@ -336,14 +360,15 @@ def main():
         # Clone code
         sol_count = 0
         if not args.skip_code:
-            print(f"  Cloning GitHub...")
+            repo_url, branch, subpath = parse_github_url(github_url)
+            print(f"  Cloning {repo_url} (branch={branch}, subpath={subpath})...")
             tmp_repo = Path("/tmp") / f"repo_{rid}"
             if tmp_repo.exists():
                 shutil.rmtree(tmp_repo)
 
-            if clone_github_repo(github_url, tmp_repo):
+            if clone_github_repo(repo_url, tmp_repo, branch=branch):
                 code_dir = protocol_dir / "code"
-                sol_count = extract_solidity_files(tmp_repo, code_dir)
+                sol_count = extract_solidity_files(tmp_repo, code_dir, subpath=subpath)
                 print(f"  {sol_count} Solidity files extracted")
                 shutil.rmtree(tmp_repo, ignore_errors=True)
             else:

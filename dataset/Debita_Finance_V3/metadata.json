@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 25,
   "description": "Debita is a decentralized peer-to-peer lending protocol that enables users to borrow against ERC20 tokens and NFTs, focusing on veNFTs as collateral. The application features custom terms and time-based liquidations to facilitate flexible interactions between borrowers and lenders. Debita V3 enhances capital efficiency by integrating oracles to maintain accurate offer parameters and mitigate risks from price fluctuations. It also allows borrowers to access liquidity from multiple lenders simultaneously and introduces a marketplace for trading veNFTs through Dutch Auctions to address liquidation issues. Additionally, an advanced veNFT management tool gives users control over their assets while utilizing them within the Debita ecosystem."
 }

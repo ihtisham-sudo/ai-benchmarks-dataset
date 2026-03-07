@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 2,
   "description": "Pico is an open-source zero-knowledge virtual machine (zkVM) designed to enhance the development of secure, scalable, and high-performance decentralized applications. Its modular architecture allows developers to leverage interchangeable proving backends, integrate app-specific circuits, and customize proving workflows to meet specific application needs. Pico' strengths include modularity, which enables precise configuration; flexibility, allowing fine-tuning of proof generation processes; extensibility for seamless integration of specialized components; and performance, achieving industry-leading proof generation speeds. This robust platform is built to adapt to the evolving landscape of cryptographic research, making it suitable for both developers and researchers in the field of zero-knowledge technology."
 }

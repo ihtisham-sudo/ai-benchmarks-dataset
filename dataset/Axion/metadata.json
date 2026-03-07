@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 17,
   "description": "The Axion application serves as a DeFi-native stablecoin protocol designed to enhance capital efficiency and provide robust security. It aims to offer higher farming rewards compared to other secure stablecoins, thereby attracting users to participate in its ecosystem. The protocol emphasizes security and peg guarantees as foundational principles, ensuring that users can trust the stability of the stablecoin. Additionally, Axion incorporates advanced mechanics for supply growth and decrease, which are crucial for maintaining its value and usability in decentralized exchanges (DEXes). Overall, the application seeks to create a reliable and efficient stablecoin solution tailored for the decentralized finance landscape."
 }

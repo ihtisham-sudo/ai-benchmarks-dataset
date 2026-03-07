@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 56,
   "description": "Allo Protocol is a set of smart contracts designed to facilitate the democratic allocation and distribution of capital. Developed by Gitcoin, it powers the Grants Stack and supports various capital allocation mechanisms, including quadratic funding. The protocol allows communities to customize their funding mechanisms, set eligibility criteria for projects and voters, and choose how to distribute capital, whether through lump sums or milestone-based payments. Allo Protocol also includes a registry of recipients and a strategy for capital allocation, making it a versatile tool for those looking to build custom funding solutions. Additionally, the Grants Stack, built on Allo, enables the operation of grants programs with self-serve funding rounds."
 }

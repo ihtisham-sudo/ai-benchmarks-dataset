@@ -12,6 +12,6 @@
     "low": 1,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 57,
   "description": "Y2K Finance is a suite of structured products designed for exotic peg derivatives, enabling market participants to hedge or speculate on the risk of pegged assets deviating from their fair implied market value. The application offers various products, including Earthquake Tsunami and Wildfire, which are set to launch in the future. Y2K Finance aims to provide robust tools for managing the risks associated with pegged assets, catering to both hedgers and speculators. The documentation portal serves as a resource for users to understand and navigate the functionalities of these products. As of the last update, the launch dates for the products are still to be determined."
 }

@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 23,
   "description": "Unitas DeFi Protocol aims to create a new category of stablecoins known as unitized stablecoins, which represent emerging market currencies and enhance financial inclusion. These stablecoins are decentralized and over-reserved with USD stablecoins, ensuring that holding a Unitas stablecoin equates to holding a specific amount of USD stablecoin. For instance, a Unitas Indian Rupee stablecoin is pegged to the value of USD stablecoin based on current exchange rates. The protocol guarantees unconditional convertibility back to USD stablecoins, and in the event of a decrease in over-reserve, it can execute a global settlement to protect users. By facilitating foreign investment and cross-border payments, Unitas aims to empower emerging market businesses and integrate them into the global financial system."
 }

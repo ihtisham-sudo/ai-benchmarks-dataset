@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 115,
   "description": "ELFi is a decentralized derivatives trading platform designed to meet the diverse needs of Web3 users by supporting a wide range of digital assets, including ETH, BTC, and MEME tokens. It features an innovative ELP liquidity architecture that offers competitive stablecoin yield products and high-yield options linked to non-stablecoins. The platform integrates portfolio margining and pooled trading, enabling zero-slippage trading and advanced risk management. ELFi' comprehensive risk management system prioritizes risk isolation and precise asset pricing, catering to various risk levels. With its commitment to innovation and a growing user base, ELFi aims to become a leader in the decentralized derivatives market."
 }

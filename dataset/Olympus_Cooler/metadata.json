@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 6,
   "description": "Cooler Loans is a decentralized lending platform that enables OHM token holders to borrow DAI using their gOHM tokens as collateral. The application operates through a permissionless and immutable framework governed by Olympus smart contracts, providing users with reliable access to liquidity. Users initiate the borrowing process by creating a unique Cooler escrow contract and can request loans by specifying the amount of DAI to borrow or the amount of gOHM collateral to deposit. Interest on the loan is accrued upfront, and users can repay, extend, or default on their loans, with repayments first allocated to interest before reducing the principal."
 }

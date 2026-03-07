@@ -12,6 +12,6 @@
     "low": 4,
     "other": 10
   },
-  "solidity_files": 0,
+  "solidity_files": 14,
   "description": "The main purpose of the application is to simplify transaction prerequisites through the use of Predicate Functions that define rules for transaction approval. These flexible pieces of code allow developers to create policies by stacking rules, which are then enforced by the Predicate Network. The application owner manages these policies, which can be migrated to a multisig wallet or DAO and are stored on the Ethereum blockchain for easy updates. Additionally, Predicate provides pre-transaction policies at the smart contract level and access to various onchain and offchain data to enhance policy enforcement, creating a trust-minimized rulemaking system for developers."
 }

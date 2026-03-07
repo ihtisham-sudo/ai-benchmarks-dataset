@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 20,
   "description": "ZAP is a community-driven token distribution platform designed to enhance the token launch experience. It features three main products: ZAP Labs, which focuses on curated token launches; ZAP Launch, aimed at discovering and launching new memecoins; and ZAP Drops, which facilitates community building and questing. The platform' primary mission is to address existing challenges in the token launch space while improving user experience. By doing so, ZAP seeks to promote greater adoption of users within the web3 ecosystem."
 }

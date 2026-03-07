@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 30,
   "description": "The main purpose of the Carapace application is to provide a fully decentralized solution for securely managing private keys and digital assets. It addresses the growing concern among crypto asset owners about the loss of their assets, as studies show that while many worry about losing access, few have effective plans in place. Carapace aims to empower users by offering native ways to store their private keys without compromising security, recognizing that traditional methods often fall short. The application also seeks to minimize the number of assets that remain inaccessible due to lost private keys, which has been a significant issue in the crypto ecosystem since 2011, with an estimated 20% of Bitcoin believed to be lost. Ultimately, Carapace' mission is to facilitate a safer onboarding experience into the web3 ecosystem."
 }

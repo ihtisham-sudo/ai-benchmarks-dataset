@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 6,
   "description": "SWAN is a DeFi application that transforms prompt engineering into a competitive, skill-based economy where AI Agents meet human creativity. Users can create autonomous personalities, known as Agents, which possess goals, memory, and their own simulated worlds. These Agents evolve by acquiring high-quality prompts, called Artifacts, crafted by real users, incentivizing creativity and precision in prompting. Artifact Creators earn rewards when their prompts are selected, while Agent creators benefit from listing fees as others enhance their Agents'stories, creating a self-sustaining lore economy. Ultimately, SWAN stands out by making prompting skills a form of digital capital, allowing users to profit from their creativity."
 }

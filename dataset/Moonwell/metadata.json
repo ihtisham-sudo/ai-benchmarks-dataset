@@ -12,6 +12,6 @@
     "low": 0,
     "other": 0
   },
-  "solidity_files": 0,
+  "solidity_files": 43,
   "description": "Moonwell is a decentralized lending and borrowing protocol designed to empower users by simplifying their experience with digital assets. Built on platforms like Base, Optimism, Moonbeam, and Moonriver, the application features a user-friendly interface that allows both novice and experienced users to lend, borrow, and claim rewards effortlessly. With a non-custodial architecture, users maintain complete control over their assets, ensuring security and transparency in all transactions. Moonwell also supports global accessibility through an integrated language dropdown menu and is backed by a community of moderators to assist users on their onchain journey. Additionally, the protocol employs onchain governance to align with community interests and enhance resilience against disruptions."
 }
