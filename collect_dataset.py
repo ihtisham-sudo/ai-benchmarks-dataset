@@ -25,9 +25,10 @@ SOLODIT_BASE = "https://solodit.cyfrin.io/api/v1/solodit"
 SOLODIT_API_KEY = os.getenv("SOLODIT_API_KEY", "")
 DATASET_DIR = Path("dataset")
 
-# FROM=110 is Sherlock, FROM=111 is another common source
-KNOWN_FROM_VALUES = [110, 111, 112, 113, 114, 115]
+# FROM=110 is Sherlock, FROM=124 is TrailOfBits, FROM=127 is Halborn, etc.
+KNOWN_FROM_VALUES = list(range(110, 131))
 MAX_ISSUES_PER_AUDIT = 80
+MAX_AUDIT_NUMBERS = 5
 
 
 def scas_get(path, quiet=False, retries=3):
@@ -87,27 +88,29 @@ def fetch_protocol_details(name):
 
 
 def discover_from_value(rid):
-    for from_val in KNOWN_FROM_VALUES:
-        result = scas_get(f"/vulnerability/RID{rid}_AUDIT0_FROM{from_val}_ISSUE1", quiet=True)
-        if result and isinstance(result, dict) and result.get("title"):
-            return from_val
-    return None
+    for audit_num in range(MAX_AUDIT_NUMBERS):
+        for from_val in KNOWN_FROM_VALUES:
+            result = scas_get(f"/vulnerability/RID{rid}_AUDIT{audit_num}_FROM{from_val}_ISSUE1", quiet=True)
+            if result and isinstance(result, dict) and result.get("title"):
+                return from_val, audit_num
+    return None, None
 
 
-def fetch_scas_vulnerabilities(rid, from_val, report_amount):
+def fetch_scas_vulnerabilities(rid, from_val, report_amount, audit_num=0):
     vulns = []
-    consecutive_misses = 0
-
-    for issue_num in range(1, MAX_ISSUES_PER_AUDIT + 1):
-        vuln_id = f"RID{rid}_AUDIT0_FROM{from_val}_ISSUE{issue_num}"
-        result = scas_get(f"/vulnerability/{vuln_id}", quiet=True)
-        if result and isinstance(result, dict) and result.get("title"):
-            vulns.append(result)
-            consecutive_misses = 0
-        else:
-            consecutive_misses += 1
-            if consecutive_misses >= 3:
-                break
+    # Search across all AUDIT numbers starting from the discovered one
+    for an in range(audit_num, MAX_AUDIT_NUMBERS):
+        consecutive_misses = 0
+        for issue_num in range(1, MAX_ISSUES_PER_AUDIT + 1):
+            vuln_id = f"RID{rid}_AUDIT{an}_FROM{from_val}_ISSUE{issue_num}"
+            result = scas_get(f"/vulnerability/{vuln_id}", quiet=True)
+            if result and isinstance(result, dict) and result.get("title"):
+                vulns.append(result)
+                consecutive_misses = 0
+            else:
+                consecutive_misses += 1
+                if consecutive_misses >= 3:
+                    break
 
     return vulns
 
@@ -140,7 +143,17 @@ def fetch_solodit_findings(protocol_name):
         page += 1
         time.sleep(3)
 
-    return all_findings
+    target = protocol_name.lower().replace(" ", "").replace("_", "")
+    filtered = []
+    for f in all_findings:
+        fp = f.get("protocol_name", "").lower().replace(" ", "").replace("_", "")
+        if target in fp or fp in target:
+            filtered.append(f)
+
+    if len(filtered) < len(all_findings):
+        print(f"  Solodit: filtered {len(all_findings)} -> {len(filtered)} (removed unrelated protocols)")
+
+    return filtered
 
 
 def parse_github_url(url):
@@ -297,15 +310,15 @@ def main():
             continue
 
         # Discover FROM value quickly
-        from_val = discover_from_value(rid)
+        from_val, audit_num = discover_from_value(rid)
 
         high_vulns = []
         all_vulns = []
         vuln_source = "none"
 
         if from_val is not None:
-            print(f"  FROM={from_val}, fetching vulns...")
-            all_vulns = fetch_scas_vulnerabilities(rid, from_val, total_reports)
+            print(f"  FROM={from_val}, AUDIT={audit_num}, fetching vulns...")
+            all_vulns = fetch_scas_vulnerabilities(rid, from_val, total_reports, audit_num)
             high_vulns = [v for v in all_vulns if v.get("severity", "").lower() == "high"]
             vuln_source = "scas"
             print(f"  {len(all_vulns)} total, {len(high_vulns)} HIGH")
