@@ -1,0 +1,63 @@
+repo,exchanges,vaults,lending_market,oracles,bridge,token,governance,smart_wallet,timelock,access_control,present_blocks,present_block_names
+Aave_V3,False,True,True,True,True,True,False,False,False,True,6,"Vaults, Lending Market, Oracles, Bridge, Token, Access Control"
+Aegis,False,True,False,True,False,False,False,False,True,True,4,"Vaults, Oracles, Timelock, Access Control"
+Allo_V2,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Aloe_II,False,True,True,True,False,True,False,False,False,False,4,"Vaults, Lending Market, Oracles, Token"
+Amphor,False,True,False,False,False,True,False,False,False,True,3,"Vaults, Token, Access Control"
+Axion,True,False,False,False,False,False,False,False,False,True,2,"Exchanges, Access Control"
+Axis_Finance,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Benqi,True,False,True,True,False,True,False,False,False,True,5,"Exchanges, Lending Market, Oracles, Token, Access Control"
+Bima,False,False,True,True,False,True,False,False,False,True,4,"Lending Market, Oracles, Token, Access Control"
+BondProtocol,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Boost_Protocol,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Brevis,True,False,False,False,True,True,True,False,False,True,5,"Exchanges, Bridge, Token, Governance, Access Control"
+Buffer_Finance,False,False,False,True,False,False,False,False,False,True,2,"Oracles, Access Control"
+Burve,False,False,False,False,False,False,False,False,False,False,0,
+Carapace,False,False,False,False,False,False,False,False,False,True,1,Access Control
+Clave,True,False,False,False,False,True,False,True,False,True,4,"Exchanges, Token, Smart Wallet, Access Control"
+Debita_Finance_V3,False,False,False,True,False,True,False,False,False,True,3,"Oracles, Token, Access Control"
+Dinari,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Eco_Op_Bridge,False,False,False,False,True,True,False,False,False,False,2,"Bridge, Token"
+Eggs_Finance,False,False,True,False,False,False,False,False,False,True,2,"Lending Market, Access Control"
+Elfi,True,True,False,True,False,False,False,False,False,True,4,"Exchanges, Vaults, Oracles, Access Control"
+FlatMoney,True,False,False,True,False,True,False,False,False,True,4,"Exchanges, Oracles, Token, Access Control"
+Flayer,True,False,False,False,False,True,False,False,False,True,3,"Exchanges, Token, Access Control"
+Footium,False,False,False,False,False,False,False,False,False,True,1,Access Control
+FrankenDAO,False,False,False,False,False,True,True,True,True,False,4,"Token, Governance, Smart Wallet, Timelock"
+GMX_V2,True,False,True,True,False,True,True,False,True,True,7,"Exchanges, Lending Market, Oracles, Token, Governance, Timelock, Access Control"
+Gamme_Brevis_Rewarder,False,False,False,False,False,False,False,False,False,True,1,Access Control
+HatsSignerGate,False,False,False,False,False,False,False,False,False,False,0,
+Kwenta_Staking_Contracts,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+MagicSea_Staking,True,False,False,False,False,True,False,False,False,True,3,"Exchanges, Token, Access Control"
+Midas,False,True,False,True,False,False,False,False,True,True,4,"Vaults, Oracles, Timelock, Access Control"
+Moonwell,True,False,True,True,False,True,True,True,True,False,7,"Exchanges, Lending Market, Oracles, Token, Governance, Smart Wallet, Timelock"
+Oku_Trade_Orders,True,False,False,True,False,True,False,False,False,True,4,"Exchanges, Oracles, Token, Access Control"
+Olympus_Cooler,False,False,False,False,False,False,False,False,False,True,1,Access Control
+Perpetual_Protocol,True,False,True,True,False,True,False,True,False,True,6,"Exchanges, Lending Market, Oracles, Token, Smart Wallet, Access Control"
+Plaza_Finance,False,False,False,True,False,False,False,False,False,True,2,"Oracles, Access Control"
+PoolTogetherV4,True,False,False,False,False,False,False,False,False,True,2,"Exchanges, Access Control"
+Predicate,False,False,False,False,True,False,False,False,False,True,2,"Bridge, Access Control"
+RadicalXChange,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Rage_Trade,True,True,True,True,False,False,False,False,False,True,5,"Exchanges, Vaults, Lending Market, Oracles, Access Control"
+Smilee_Finance,False,True,False,False,False,True,False,False,False,True,3,"Vaults, Token, Access Control"
+Splits,False,False,False,False,False,False,False,False,False,False,0,
+SuperFluid_Finance,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+SuperseedToken,False,False,False,False,False,False,False,False,False,True,1,Access Control
+Swan,False,False,False,False,False,False,False,False,False,True,1,Access Control
+Telcoin,True,False,False,False,False,True,False,False,False,True,3,"Exchanges, Token, Access Control"
+Teller_Finance,True,True,True,False,False,True,False,False,False,True,5,"Exchanges, Vaults, Lending Market, Token, Access Control"
+Tokemak,True,True,False,True,True,True,False,False,False,True,6,"Exchanges, Vaults, Oracles, Bridge, Token, Access Control"
+Tornado_Cash,False,False,False,False,False,True,False,False,False,False,1,Token
+Truflation,True,False,False,False,False,False,False,False,False,True,2,"Exchanges, Access Control"
+USSD_V1,True,False,False,True,False,False,False,False,False,True,3,"Exchanges, Oracles, Access Control"
+UnionFinance_V2,True,False,True,False,True,True,False,False,False,True,5,"Exchanges, Lending Market, Bridge, Token, Access Control"
+Uniswap_V3,True,False,False,False,False,True,False,False,False,False,2,"Exchanges, Token"
+UnitasProtocol_V1,True,False,False,True,False,True,False,False,True,True,5,"Exchanges, Oracles, Token, Timelock, Access Control"
+Velocitimeter_V4,True,False,False,False,False,True,True,False,False,False,3,"Exchanges, Token, Governance"
+Wenwin,True,False,False,False,False,False,False,False,False,True,2,"Exchanges, Access Control"
+Wildcat_V2,False,True,True,False,False,True,False,False,False,True,4,"Vaults, Lending Market, Token, Access Control"
+Winnables,False,False,False,False,False,True,False,False,False,True,2,"Token, Access Control"
+Y2K_Finance,False,True,False,True,False,True,False,False,True,True,5,"Vaults, Oracles, Token, Timelock, Access Control"
+Yieldoor,True,True,True,True,False,False,False,False,False,True,5,"Exchanges, Vaults, Lending Market, Oracles, Access Control"
+Zap_Protocol,True,False,False,False,False,True,False,False,False,True,3,"Exchanges, Token, Access Control"
+Zivoe,True,True,False,True,False,True,True,False,True,True,7,"Exchanges, Vaults, Oracles, Token, Governance, Timelock, Access Control"

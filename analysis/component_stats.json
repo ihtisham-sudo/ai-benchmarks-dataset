@@ -1,0 +1,62 @@
+{
+  "repos_analyzed": 62,
+  "total_detected_blocks": 191,
+  "component_counts": {
+    "exchanges": 27,
+    "vaults": 14,
+    "lending_market": 13,
+    "oracles": 22,
+    "bridge": 6,
+    "token": 39,
+    "governance": 6,
+    "smart_wallet": 4,
+    "timelock": 8,
+    "access_control": 52
+  },
+  "most_present_components": [
+    [
+      "access_control",
+      52
+    ],
+    [
+      "token",
+      39
+    ],
+    [
+      "exchanges",
+      27
+    ],
+    [
+      "oracles",
+      22
+    ],
+    [
+      "vaults",
+      14
+    ],
+    [
+      "lending_market",
+      13
+    ],
+    [
+      "timelock",
+      8
+    ],
+    [
+      "bridge",
+      6
+    ],
+    [
+      "governance",
+      6
+    ],
+    [
+      "smart_wallet",
+      4
+    ]
+  ],
+  "avg_blocks_per_repo": 3.081,
+  "median_blocks_per_repo": 3.0,
+  "min_blocks_per_repo": 0,
+  "max_blocks_per_repo": 7
+}
