@@ -9,8 +9,8 @@
   "vulnerability_counts": {
     "high": 1,
     "medium": 0,
-    "low": 2,
-    "other": 3
+    "low": 0,
+    "other": 0
   },
   "solidity_files": 23,
   "description": "Superseed is a DeFi application that transforms Ethereum scaling into self-repaying loans. It aims to maximize capital efficiency by returning all protocol revenue to its users, thereby promoting financial freedom through Ethereum. Users can access yield at zero percent interest, with loans being repaid automatically through generated fees such as sequencer profits and CDP interest. As an optimistic rollup, Superseed incorporates various components that enhance the on-chain experience by facilitating effortless loan repayments."

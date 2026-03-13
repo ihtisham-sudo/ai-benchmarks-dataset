@@ -8,9 +8,9 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 1,
-    "medium": 8,
+    "medium": 0,
     "low": 0,
-    "other": 11
+    "other": 0
   },
   "solidity_files": 57,
   "description": "Wildcat is a decentralized protocol designed to enable undercollateralized borrowing and lending, allowing borrowers to customize their loan terms while providing lenders with new opportunities. Unlike traditional overcollateralized solutions, Wildcat empowers users to define their loan amounts, interest rates, and redemption terms, offering greater flexibility in the credit market. The platform facilitates direct lending to specific borrowers, ensuring more targeted credit exposure and predictable returns through fixed interest rates. Additionally, Wildcat' open-source Master Loan Agreement aligns on-chain interactions with traditional credit agreements, while the protocol itself does not assess borrower creditworthiness, placing the responsibility of risk evaluation on lenders."

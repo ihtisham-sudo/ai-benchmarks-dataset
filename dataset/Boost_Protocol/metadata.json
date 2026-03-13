@@ -8,7 +8,7 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 6,
-    "medium": 3,
+    "medium": 0,
     "low": 0,
     "other": 0
   },

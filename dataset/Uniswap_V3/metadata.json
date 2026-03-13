@@ -8,9 +8,9 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 2,
-    "medium": 4,
-    "low": 1,
-    "other": 3
+    "medium": 0,
+    "low": 0,
+    "other": 0
   },
   "solidity_files": 0,
   "description": "The Uniswap protocol is a decentralized application designed for exchanging cryptocurrencies (ERC-20 Tokens) on the Ethereum blockchain without the need for trusted intermediaries. It operates through a series of non-upgradable smart contracts that emphasize security, censorship resistance, and self-custody. Uniswap has evolved through four versions, with v3 introducing concentrated liquidity for improved capital efficiency and v4 offering a singleton pool architecture for enhanced customization. Unlike traditional exchanges that rely on order books, Uniswap uses an Automated Market Maker (AMM) model, allowing users to trade directly with liquidity pools, thus ensuring permissionless access and immutability of the protocol."

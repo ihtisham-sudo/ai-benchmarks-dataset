@@ -7,7 +7,7 @@
   "total_audit_reports": 13,
   "vulnerability_source": "solodit",
   "vulnerability_counts": {
-    "high": 1,
+    "high": 0,
     "medium": 0,
     "low": 0,
     "other": 0

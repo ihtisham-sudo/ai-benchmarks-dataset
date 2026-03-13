@@ -8,9 +8,9 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 3,
-    "medium": 5,
-    "low": 6,
-    "other": 10
+    "medium": 0,
+    "low": 0,
+    "other": 0
   },
   "solidity_files": 60,
   "description": "Clave is a self-custodial smart wallet powered by ZKsync, aimed at providing a seamless and user-friendly payment experience with zero gas fees. It offers one-click onboarding, gasless transactions, and access to yield opportunities within the ZK ecosystem. Clave emphasizes security through hardware-level protection and social recovery, allowing users to manage their wallets without needing to remember complex seed phrases. The application is designed with a mobile-first approach, utilizing biometric authentication and passkeys to ensure that users'private keys remain secure on their devices."

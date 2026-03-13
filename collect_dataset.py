@@ -338,10 +338,19 @@ def main():
             print(f"  Trying Solodit...")
             solodit_findings = fetch_solodit_findings(name)
             if solodit_findings:
-                high_vulns = solodit_findings
-                all_vulns = solodit_findings
-                vuln_source = "solodit"
-                print(f"  Solodit: {len(solodit_findings)} HIGH")
+                solodit_high = [v for v in solodit_findings if v.get("impact", "").lower() == "high"]
+                if high_vulns:
+                    # Keep SCAS highs to avoid dropping valid findings during fallback.
+                    print(f"  Solodit: {len(solodit_high)} HIGH (kept {len(high_vulns)} SCAS HIGH)")
+                    vuln_source = "scas"
+                else:
+                    high_vulns = solodit_high
+                    all_vulns = solodit_findings
+                    vuln_source = "solodit"
+                    print(f"  Solodit: {len(high_vulns)} HIGH")
+
+        if vuln_source == "needs_fallback" and high_vulns:
+            vuln_source = "scas"
 
         if not high_vulns:
             print(f"  Skip: no HIGH vulns")
@@ -352,7 +361,7 @@ def main():
         if args.dry_run:
             results.append({
                 "name": name, "rid": rid, "github": github_url,
-                "total_vulns": len(all_vulns), "high_vulns": len(high_vulns),
+                "total_vulns": len(high_vulns), "high_vulns": len(high_vulns),
                 "source": vuln_source, "total_reports": total_reports
             })
             continue
@@ -360,9 +369,11 @@ def main():
         # Save vulnerabilities
         protocol_dir = DATASET_DIR / sanitize_filename(name)
         vuln_dir = protocol_dir / "vulnerabilities"
+        if vuln_dir.exists():
+            shutil.rmtree(vuln_dir)
 
         severities = {"high": 0, "medium": 0, "low": 0, "other": 0}
-        for idx, vuln in enumerate(all_vulns, 1):
+        for idx, vuln in enumerate(high_vulns, 1):
             sev = save_vulnerability(vuln, vuln_dir, idx, source=vuln_source)
             sev_lower = sev.lower()
             if sev_lower in severities:
@@ -405,7 +416,7 @@ def main():
 
         results.append({
             "name": name, "rid": rid, "github": github_url,
-            "total_vulns": len(all_vulns), "high_vulns": len(high_vulns),
+            "total_vulns": len(high_vulns), "high_vulns": len(high_vulns),
             "sol_files": sol_count, "source": vuln_source
         })
 

@@ -8,8 +8,8 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 7,
-    "medium": 7,
-    "low": 1,
+    "medium": 0,
+    "low": 0,
     "other": 0
   },
   "solidity_files": 57,

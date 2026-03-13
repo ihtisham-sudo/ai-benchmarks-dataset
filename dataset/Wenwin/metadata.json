@@ -8,9 +8,9 @@
   "vulnerability_source": "scas",
   "vulnerability_counts": {
     "high": 1,
-    "medium": 5,
+    "medium": 0,
     "low": 0,
-    "other": 6
+    "other": 0
   },
   "solidity_files": 34,
   "description": "Wenwin is a decentralized gaming protocol that enables developers to create chance-based games on the blockchain. It includes smart contracts that facilitate the Wenwin Lottery, a next-generation lottery game built on Polygon, which emphasizes transparency and security. Users can purchase unlimited tickets for each draw, and the lottery operates based on specific parameters for number selection. The draw is executed manually after a scheduled time, utilizing ChainLink VRFv2 to generate a random number for determining winners, who can then claim their prizes. Each ticket is represented as an NFT, and ticket sales generate rewards for stakers and frontend operators, enhancing the overall gaming experience."
