@@ -1,0 +1,98 @@
+{
+  "source_protocols": [
+    "FlatMoney",
+    "GMX_V2",
+    "Olympus_Cooler"
+  ],
+  "detected_components": {
+    "token": [
+      "FlatMoney",
+      "GMX_V2"
+    ],
+    "exchange": [
+      "FlatMoney",
+      "GMX_V2"
+    ],
+    "oracle": [
+      "FlatMoney",
+      "GMX_V2"
+    ],
+    "vault": [
+      "FlatMoney",
+      "GMX_V2"
+    ],
+    "acl": [
+      "FlatMoney",
+      "Olympus_Cooler"
+    ],
+    "timelock": [
+      "GMX_V2"
+    ],
+    "bridge": [
+      "GMX_V2"
+    ]
+  },
+  "generated_contracts": [
+    {
+      "file": "Events.sol",
+      "contract": "SyntheticVaultEvents",
+      "kind": "library",
+      "functions": 0,
+      "state_vars": 0
+    },
+    {
+      "file": "AccessControl.sol",
+      "contract": "SyntheticVaultAccessControl",
+      "kind": "acl",
+      "functions": 15,
+      "state_vars": 3
+    },
+    {
+      "file": "Token.sol",
+      "contract": "SyntheticVaultToken",
+      "kind": "token",
+      "functions": 17,
+      "state_vars": 14
+    },
+    {
+      "file": "Vault.sol",
+      "contract": "SyntheticVaultVault",
+      "kind": "vault",
+      "functions": 9,
+      "state_vars": 4
+    },
+    {
+      "file": "SwapRouter.sol",
+      "contract": "SyntheticVaultSwapRouter",
+      "kind": "exchange",
+      "functions": 18,
+      "state_vars": 12
+    },
+    {
+      "file": "PriceOracle.sol",
+      "contract": "SyntheticVaultOracle",
+      "kind": "oracle",
+      "functions": 16,
+      "state_vars": 10
+    },
+    {
+      "file": "Timelock.sol",
+      "contract": "SyntheticVaultTimelock",
+      "kind": "timelock",
+      "functions": 17,
+      "state_vars": 7
+    },
+    {
+      "file": "SyntheticVault.sol",
+      "contract": "SyntheticVault",
+      "kind": "core",
+      "functions": 1,
+      "state_vars": 6
+    }
+  ],
+  "stats": {
+    "total_contracts": 8,
+    "total_functions": 93,
+    "total_state_vars": 56
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "source_protocols": [
+    "Dinari",
+    "Telcoin"
+  ],
+  "detected_components": {
+    "token": [
+      "Dinari",
+      "Telcoin"
+    ],
+    "acl": [
+      "Dinari",
+      "Telcoin"
+    ],
+    "exchange": [
+      "Telcoin"
+    ]
+  },
+  "generated_contracts": [
+    {
+      "file": "Events.sol",
+      "contract": "SecureTokenEvents",
+      "kind": "library",
+      "functions": 0,
+      "state_vars": 0
+    },
+    {
+      "file": "AccessControl.sol",
+      "contract": "SecureTokenAccessControl",
+      "kind": "acl",
+      "functions": 15,
+      "state_vars": 3
+    },
+    {
+      "file": "Token.sol",
+      "contract": "SecureTokenToken",
+      "kind": "token",
+      "functions": 17,
+      "state_vars": 14
+    },
+    {
+      "file": "SwapRouter.sol",
+      "contract": "SecureTokenSwapRouter",
+      "kind": "exchange",
+      "functions": 12,
+      "state_vars": 5
+    },
+    {
+      "file": "SecureToken.sol",
+      "contract": "SecureToken",
+      "kind": "core",
+      "functions": 1,
+      "state_vars": 3
+    }
+  ],
+  "stats": {
+    "total_contracts": 5,
+    "total_functions": 45,
+    "total_state_vars": 25
+  }
+}
