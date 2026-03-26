@@ -1,80 +1,75 @@
-# Protocol Generation Agent
+# Protocol Contract Catalogue Tool
 
-> **One-line summary:** Give it 2-3 real protocol codebases → get a brand-new, multi-contract Solidity protocol back.
+> **One-line summary:** Give it a protocol codebase → get a structured markdown catalogue of every contract, grouped by primitive type.
 
 ---
 
 ## How to Run
 
 ```bash
-# See all 62 available protocols
-python3 generate_protocol.py --list
+# List all 62 available protocols
+python3 list_contracts.py --list
 
-# Two-protocol synthesis
-python3 generate_protocol.py --protocols Aave_V3 Uniswap_V3 --name LendingDex
+# Catalogue a single protocol (prints to stdout)
+python3 list_contracts.py Dinari
 
-# Three-protocol synthesis with custom output
-python3 generate_protocol.py --protocols FlatMoney GMX_V2 Olympus_Cooler \
-  --name SyntheticVault --output ./generated/
+# Save to a file
+python3 list_contracts.py Dinari --output analysis/Dinari_catalogue.md
+python3 list_contracts.py Midas  --output analysis/Midas_catalogue.md
 ```
 
 ---
 
-## The Three Stages
+## What It Produces
+
+The tool analyses `dataset/<Protocol>/code/`, picks up every concrete Solidity `contract` (interfaces and libraries are skipped), classifies each into a **primitive category**, and renders a markdown document like this:
 
 ```
-dataset/Aave_V3/code/   ──┐
-dataset/Uniswap_V3/code/ ─┤  Stage 1: Analyse
-dataset/Telcoin/code/   ──┘
-        │
-        ▼  extracts: function signatures, state var shapes,
-           events, errors ,  classified by component type
-        │
-        ▼  Stage 2: Architect
-           decides which contracts to generate
-           (token / lending / exchange / oracle / vault / …)
-        │
-        ▼  Stage 3: Generate
-           writes fresh Solidity ^0.8.20 from scratch
-           no inheritance from source contracts
-           no copied bodies
-        │
-        ▼
-generated/<Name>/
-  manifest.json
-  src/
-    AccessControl.sol + interfaces/IAccessControl.sol
-    Token.sol         + interfaces/IToken.sol
-    LendingPool.sol   + interfaces/ILendingPool.sol
-    SwapRouter.sol    + interfaces/ISwapRouter.sol
-    PriceOracle.sol   + interfaces/IPriceOracle.sol
-    Vault.sol         + interfaces/IVault.sol
-    <Name>.sol        + interfaces/I<Name>.sol   ← core coordinator
-```
+# Dinari — Contract Catalogue
 
----
+> 8 contract(s) identified across 5 primitive categories.
 
-## Real Example ,  `Aave_V3 + Uniswap_V3 → LendingDex`
+## Tokens
+The protocol utilises the following token contracts for accounting purposes:
+- **DShare** – Core token contract for bridged assets. Rebases on stock splits.
+  File: `src/DShare.sol`
+  Key functions: `balancePerShare`, `burn`, `mint`, `setName`, `setSymbol` …
 
-```
-━━━ Stage 1: Analysing source protocols ━━━
-  Analysing Aave_V3...    done  (components: token, lending, oracle, vault, acl | 265 patterns)
-  Analysing Uniswap_V3... done  (components: token, exchange              |  14 patterns)
+## Containers
+The protocol stores assets in the following containers:
+- **Vault** – Managing and executing withdrawals of ERC20 tokens.
+  File: `src/orders/Vault.sol`
 
-━━━ Stage 2: Designing architecture ━━━
-  → Events.sol         [library]    0 fns,  0 vars
-  → AccessControl.sol  [acl]       15 fns,  3 vars
-  → Token.sol          [token]     17 fns, 14 vars
-  → Vault.sol          [vault]     19 fns, 12 vars
-  → LendingPool.sol    [lending]   19 fns, 13 vars
-  → SwapRouter.sol     [exchange]   9 fns,  5 vars
-  → PriceOracle.sol    [oracle]    16 fns,  6 vars
-  → LendingDex.sol     [core]       1 fns,  6 vars
+## Exchange
+The protocol implements protocol operations as the following exchange contracts:
+- **OrderProcessor** – Core contract managing orders for dShare tokens.
+  File: `src/orders/OrderProcessor.sol`
 
-━━━ Stage 3: Generating → generated/Aave_V3+Uniswap_V3/ ━━━
-  ✓ 8 contracts  ✓ 7 interfaces  ✓ manifest.json
+## Oracle
+...
 
-✓ Done!  96 total functions, 59 state vars
+## Relationships
+**OrderProcessor** interacts directly with token contracts (DShare, WrappedDShare) …
 ```
 
 ---
+
+## Primitive Categories
+
+| Category | What goes here |
+|---|---|
+| **Tokens** | ERC-20/721/rebasing tokens |
+| **Containers** | Vaults, escrows, treasuries |
+| **Minters** | Contracts with privileged mint/burn roles |
+| **Exchange** | Order processors, swap routers, settlement contracts |
+| **Oracle** | Price feeds, rate providers |
+| **Access Control** | Role managers, transfer restrictors |
+| **Core / Factory** | Factories, registries, proxies |
+| **Other** | Utility/auxiliary contracts |
+
+---
+
+## Output Location
+
+Results are printed to stdout by default. Use `--output <path>` to write to a file.
+Suggested convention: `analysis/<Protocol>_catalogue.md`.
