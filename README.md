@@ -156,6 +156,3 @@ For each external/public function, the generated callpath output shows internal 
 
 Contributions are welcome. If you add new analysis scripts or dataset-processing utilities, please update this README and document any new outputs or dependencies.
 
-## License
-
-No license file was present in the repository at the time this README was generated.
